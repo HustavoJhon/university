@@ -1,5 +1,8 @@
 import os
-import rich
+
+from rich import print
+from rich.console import Console
+
 from fist_class import multiplicaciones_divisiones
 from fist_class import sumas_restas
 from fist_class import potencia
@@ -10,17 +13,20 @@ from practice import problem_1
 from practice import problem_2
 from practice import problem_3
 
-# from nice import rich_print
+console = Console()
+
 
 if __name__ == "__main__":
-  user = input("""Que quieres hacer? \n 
-      [1]. Sumas y restas 
+  print("""
+  [bold]Que quieres hacer?[/bold]\n 
+      [blue][1]. Sumas y restas 
       [2]. Multiplicaciones 
       [3]. Potencia 
       [4]. Raiz 
       [5]. Div 
-      [6]. Practice\n
-      >>> """)
+      [6]. Practice[/blue]\n""")
+  console.input("What is [i]your[/i] [bold red]name[/]? :smiley: ")
+  user = input(">>> ")
   os.system("clear")
   if user == "1":
     sumas_restas()
@@ -46,5 +52,5 @@ if __name__ == "__main__":
  #   rich_print()
 
   else:
-    print("Adios, Gracias por usar el programa")
+    print("[red]Adios[/red], Gracias por usar el programa!")
 

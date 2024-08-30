@@ -1,12 +1,6 @@
-print("""THE PROBLEM IS:
-  - Cual es el residuo de multiplicar a * b / 35
-  - Si a = residuo de 5 raiz de 16 entre 20
-  - b = 2^100 - (20*5) + 4 + 6 + 2 - 4 - 5 - 5
-""")
-
-
 def problem_1():
   print("=====PROBLEMA 1=====")
+  print("- Cual es el residuo de multiplicar a * b / 35")
   a = int(input("1. enter a number: "))
   b = int(input("2. enter a number: "))
   c = int(input("3. enter a number: "))
@@ -19,6 +13,7 @@ def problem_1():
 
 def problem_2():
   print("=====PROBLEMA 2=====")
+  print("- Si a = residuo de 5 raiz de 16 entre 20")
   a = int(input("1. enter a number: "))
   b = int(input("2. enter a number: "))
   c = int(input("3. enter a number: "))
@@ -33,6 +28,7 @@ def problem_2():
 
 def problem_3():
   print("=====PROBLEMA 3=====")
+  print("- b = 2^100 - (20*5) + 4 + 6 + 2 - 4 - 5 - 5")
   a = int(input("1. enter a number: "))
   b = int(input("2. enter a number: "))
   c = int(input("3. enter a number: "))
