@@ -10,3 +10,12 @@
 4. Raiz
 5. Divmod
 6. Practice
+
+
+
+**Use program**
+```python
+python -m venv env
+pip3 freeze > requirements.txt
+pip install -r requirements.txt
+```
