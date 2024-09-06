@@ -3,6 +3,7 @@ import os
 
 def sumas_restas():
   print("===== SUMAS Y RESTAS =====")
+  print("a - b - c + d + e + f + g + h + i - j")
   try:
     a = int(input("1. enter a number: "))
     b = int(input("2. enter a number: "))
@@ -25,6 +26,10 @@ def sumas_restas():
 
 def multiplicaciones_divisiones():
   print("===== MULTIPLICACION Y DIVISIONES =====")
+  print("""
+    resultado_y = (i * m) / n
+    restultado_z = (x / z) + (x * y) - (x + y)
+  """)
 
   try:
     x = int(input("1. enter a number: "))
@@ -60,6 +65,9 @@ def potencia():
 
 def raiz():
   print("===== RAIZ =====")
+  print("""
+    z = (x**0.5 + y**5) + (y**0.5 + x**4)
+        """)
   try:
     x = int(input("1. enter a number: "))
     y = float(input("2. enter a number: "))
@@ -87,5 +95,3 @@ def divmod():
   except:
     os.system("clear")
     print("Error, solo se aceptan numeros")
-
-

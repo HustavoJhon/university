@@ -25,32 +25,26 @@ if __name__ == "__main__":
       [4]. Raiz 
       [5]. Div 
       [6]. Practice[/blue]\n""")
-  console.input("What is [i]your[/i] [bold red]name[/]? :smiley: ")
-  user = input(">>> ")
+  user = int(input(">>> "))
   os.system("clear")
-  if user == "1":
-    sumas_restas()
+  try:
+    if user == 1:
+      sumas_restas()
+    elif user == 2:
+      multiplicaciones_divisiones()
+    elif user == 3:
+      potencia()
+    elif user == 4:
+      raiz()
+    elif user == 5:
+      divmod()
+    elif user == 6:
+      problem_1()
+      problem_2()
+      problem_3()
+    else:
+      print("[red]Adios[/red], Gracias por usar el programa!")
+  except:
     os.system("clear")
-  elif user == "2":
-    multiplicaciones_divisiones()
-    os.system("clear")
-  elif user == "3":
-    os.system("clear")
-    potencia()
-  elif user == "4":
-    os.system("clear")
-    raiz()
-  elif user == "5":
-    divmod()
-  elif user == "6":
-    os.system("clear")
-    problem_1()
-    problem_2()
-    problem_3()
- # elif user == "7":
- #   os.system("clear")
- #   rich_print()
-
-  else:
-    print("[red]Adios[/red], Gracias por usar el programa!")
+    print("Error, solo se aceptan numeros")
 
