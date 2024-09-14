@@ -1,34 +1,8 @@
-<center>
-
-![logo](./doc/logoUC.png)
-
-# 𝐔𝐧𝐢𝐯𝐞𝐫𝐬𝐢𝐝𝐚𝐝 𝐂𝐨𝐧𝐭𝐢𝐧𝐞𝐧𝐭𝐚𝐥
-
-</center>
-
-𝙴𝚜𝚝𝚎 𝚛𝚎𝚙𝚘𝚜𝚒𝚝𝚘𝚛𝚒𝚘 𝚌𝚘𝚗𝚝𝚒𝚎𝚗𝚎 𝚖𝚒𝚜 𝚊𝚙𝚞𝚗𝚝𝚎𝚜, 𝚝𝚛𝚊𝚋𝚊𝚓𝚘𝚜 𝚢 𝚙𝚛𝚘𝚢𝚎𝚌𝚝𝚘𝚜 𝚍𝚎𝚜𝚊𝚛𝚛𝚘𝚕𝚕𝚊𝚍𝚘𝚜 𝚍𝚞𝚛𝚊𝚗𝚝𝚎 𝚖𝚒 𝚝𝚒𝚎𝚖𝚙𝚘 𝚎𝚗 𝚕𝚊 𝚞𝚗𝚒𝚟𝚎𝚛𝚜𝚒𝚍𝚊𝚍. 𝙰𝚚𝚞𝚒́ 𝚎𝚗𝚌𝚘𝚗𝚝𝚛𝚊𝚛𝚊́𝚜 𝚛𝚎𝚌𝚞𝚛𝚜𝚘𝚜 𝚍𝚎 𝚍𝚒𝚟𝚎𝚛𝚜𝚊𝚜 𝚖𝚊𝚝𝚎𝚛𝚒𝚊𝚜, 𝚒𝚗𝚌𝚕𝚞𝚢𝚎𝚗𝚍𝚘 𝚙𝚛𝚘𝚐𝚛𝚊𝚖𝚊𝚌𝚒𝚘́𝚗, 𝚖𝚊𝚝𝚎𝚖𝚊́𝚝𝚒𝚌𝚊𝚜, 𝚌𝚒𝚎𝚗𝚌𝚒𝚊𝚜, 𝚢 𝚖𝚊́𝚜.
-
-
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="readme-top"></a>
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
-
-
 
 <!-- PROJECT SHIELDS -->
 <!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
+
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -36,22 +10,21 @@
 [![MIT License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
-* [![Laravel][dotnet.microsoft.com]][c#-url]
-
+-->
 
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
   <a href="https://github.com/othneildrew/Best-README">
-    <img src="./doc/logoUC.png" alt="Logo" width="80" height="80">
+    <img src="./doc/logoUC.jpg" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">Best-README-Template</h3>
+  <h3 align="center">𝐔𝐧𝐢𝐯𝐞𝐫𝐬𝐢𝐭𝐲</h3>
 
   <p align="center">
-    An awesome README template to jumpstart your projects!
+    Welcome to my University Projects Repository
     <br />
-    <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the courses »</strong></a>
     <br />
     <br />
     <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a>
@@ -61,8 +34,6 @@
     <a href="https://github.com/othneildrew/Best-README-Template/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 </div>
-
-
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -97,16 +68,7 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-There are many great README templates available on GitHub; however, I didn't find one that really suited my needs so I created this enhanced one. I want to create a README template so amazing that it'll be the last one you ever need -- I think this is it.
-
-Here's why:
-* Your time should be focused on creating something amazing. A project that solves a problem and helps others
-* You shouldn't be doing the same tasks over and over like creating a README from scratch
-* You should implement DRY principles to the rest of your life :smile:
-
-Of course, no one template will serve all projects since your needs may be different. So I'll be adding more in the near future. You may also suggest changes by forking this repo and creating a pull request or opening an issue. Thanks to all the people have contributed to expanding this template!
-
-Use the `BLANK_README.md` to get started.
+𝙴𝚜𝚝𝚎 𝚛𝚎𝚙𝚘𝚜𝚒𝚝𝚘𝚛𝚒𝚘 𝚌𝚘𝚗𝚝𝚒𝚎𝚗𝚎 𝚖𝚒𝚜 𝚊𝚙𝚞𝚗𝚝𝚎𝚜, 𝚝𝚛𝚊𝚋𝚊𝚓𝚘𝚜 𝚢 𝚙𝚛𝚘𝚢𝚎𝚌𝚝𝚘𝚜 𝚍𝚎𝚜𝚊𝚛𝚛𝚘𝚕𝚕𝚊𝚍𝚘𝚜 𝚍𝚞𝚛𝚊𝚗𝚝𝚎 𝚖𝚒 𝚝𝚒𝚎𝚖𝚙𝚘 𝚎𝚗 𝚕𝚊 𝚞𝚗𝚒𝚟𝚎𝚛𝚜𝚒𝚍𝚊𝚍. 𝙰𝚚𝚞𝚒́ 𝚎𝚗𝚌𝚘𝚗𝚝𝚛𝚊𝚛𝚊́𝚜 𝚛𝚎𝚌𝚞𝚛𝚜𝚘𝚜 𝚍𝚎 𝚍𝚒𝚟𝚎𝚛𝚜𝚊𝚜 𝚖𝚊𝚝𝚎𝚛𝚒𝚊𝚜, 𝚒𝚗𝚌𝚕𝚞𝚢𝚎𝚗𝚍𝚘 𝚙𝚛𝚘𝚐𝚛𝚊𝚖𝚊𝚌𝚒𝚘́𝚗, 𝚖𝚊𝚝𝚎𝚖𝚊́𝚝𝚒𝚌𝚊𝚜, 𝚌𝚒𝚎𝚗𝚌𝚒𝚊𝚜, 𝚢 𝚖𝚊́𝚜.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -123,6 +85,7 @@ This section should list any major frameworks/libraries used to bootstrap your p
 * [![Svelte][Svelte.dev]][Svelte-url]
 * [![Bootstrap][Bootstrap.com]][Bootstrap-url]
 * [![JQuery][JQuery.com]][JQuery-url]
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -171,7 +134,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@your_twitter](https://twitter.com/your_username) - email@example.com
+Gustavo Jhon🐧 - [@hustavoJhon](https://x.com/hustavoJhon) - email@example.com
 
 Project Link: [https://github.com/your_username/repo_name](https://github.com/your_username/repo_name)
 
