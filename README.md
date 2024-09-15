@@ -11,6 +11,7 @@
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 -->
+![Spotify](https://img.shields.io/badge/spotify-red?style=for-the-badge&logo=codeium&logoColor=white)
 
 <!-- PROJECT LOGO -->
 <br />
@@ -54,6 +55,7 @@
     </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#resources">Resources</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -120,6 +122,19 @@ See the [open issues](https://github.com/othneildrew/Best-README-Template/issues
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Resources
+
+![Codewars](https://img.shields.io/badge/Codewars-B1361E?style=for-the-badge&logo=codewars&logoColor=white)
+![Codechef](https://img.shields.io/badge/Codechef-5B4638?style=for-the-badge&logo=codechef&logoColor=white)
+![Codecademy](https://img.shields.io/badge/Codecademy-1F4056?style=for-the-badge&logo=codecademy&logoColor=white)
+![freeCodeCamp](https://img.shields.io/badge/freeCodeCamp-0A0A23?style=for-the-badge&logo=freeCodeCamp&logoColor=white)
+![KhanAcademy](https://img.shields.io/badge/khan%20academy-14BF96?style=for-the-badge&logo=khanacademy&logoColor=white)
+![GoogleScholar](https://img.shields.io/badge/google%20scholar-4285F4?style=for-the-badge&logo=googlescholar&logoColor=white)
+![Figma](https://img.shields.io/badge/figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)
+![Excalidraw](https://img.shields.io/badge/excalidraw-6965DB?style=for-the-badge&logo=excalidraw&logoColor=white)
+![Diagrams.net](https://img.shields.io/badge/diagrams.net-F08705?style=for-the-badge&logo=diagrams.net&logoColor=white)
+![Dev.to](https://img.shields.io/badge/dev.to-0A0A0A?style=for-the-badge&logo=dev.to&logoColor=white)
+![UML](https://img.shields.io/badge/uml-FABD14?style=for-the-badge&logo=UML&logoColor=white)
 
 
 <!-- LICENSE -->
