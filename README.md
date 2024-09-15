@@ -11,13 +11,12 @@
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 -->
-![Spotify](https://img.shields.io/badge/spotify-red?style=for-the-badge&logo=codeium&logoColor=white)
 
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
   <a href="https://github.com/othneildrew/Best-README">
-    <img src="./doc/logoUC.jpg" alt="Logo" width="80" height="80">
+    <img src="./doc/src/img/ghost_1.svg" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">𝐔𝐧𝐢𝐯𝐞𝐫𝐬𝐢𝐭𝐲</h3>
