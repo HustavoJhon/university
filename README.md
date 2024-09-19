@@ -45,20 +45,12 @@
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#resources">Resources</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -67,74 +59,71 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
-𝙴𝚜𝚝𝚎 𝚛𝚎𝚙𝚘𝚜𝚒𝚝𝚘𝚛𝚒𝚘 𝚌𝚘𝚗𝚝𝚒𝚎𝚗𝚎 𝚖𝚒𝚜 𝚊𝚙𝚞𝚗𝚝𝚎𝚜, 𝚝𝚛𝚊𝚋𝚊𝚓𝚘𝚜 𝚢 𝚙𝚛𝚘𝚢𝚎𝚌𝚝𝚘𝚜 𝚍𝚎𝚜𝚊𝚛𝚛𝚘𝚕𝚕𝚊𝚍𝚘𝚜 𝚍𝚞𝚛𝚊𝚗𝚝𝚎 𝚖𝚒 𝚝𝚒𝚎𝚖𝚙𝚘 𝚎𝚗 𝚕𝚊 𝚞𝚗𝚒𝚟𝚎𝚛𝚜𝚒𝚍𝚊𝚍. 𝙰𝚚𝚞𝚒́ 𝚎𝚗𝚌𝚘𝚗𝚝𝚛𝚊𝚛𝚊́𝚜 𝚛𝚎𝚌𝚞𝚛𝚜𝚘𝚜 𝚍𝚎 𝚍𝚒𝚟𝚎𝚛𝚜𝚊𝚜 𝚖𝚊𝚝𝚎𝚛𝚒𝚊𝚜, 𝚒𝚗𝚌𝚕𝚞𝚢𝚎𝚗𝚍𝚘 𝚙𝚛𝚘𝚐𝚛𝚊𝚖𝚊𝚌𝚒𝚘́𝚗, 𝚖𝚊𝚝𝚎𝚖𝚊́𝚝𝚒𝚌𝚊𝚜, 𝚌𝚒𝚎𝚗𝚌𝚒𝚊𝚜, 𝚢 𝚖𝚊́𝚜.
+This repository contains my notes, assignments, and projects developed during my time at university. Here, you'll find resources on various subjects, including programming, mathematics, science, and more.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ### Built With
 
-This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
+This repository includes resources and projects built using the following technologies:
 
-* [![Next][Next.js]][Next-url]
-* [![React][React.js]][React-url]
-* [![Vue][Vue.js]][Vue-url]
-* [![Angular][Angular.io]][Angular-url]
-* [![Svelte][Svelte.dev]][Svelte-url]
-* [![Bootstrap][Bootstrap.com]][Bootstrap-url]
-* [![JQuery][JQuery.com]][JQuery-url]
-
+- **Programming Languages:** C#, Python, JavaScript
+- **Frameworks:** ASP.NET Core, Flask
+- **Libraries:** NumPy, Pandas, Matplotlib
+- **Tools:** Docker, Git, Visual Studio Code
+- **Databases:** MySQL, SQLite
+- **Other:** Markdown for documentation, LaTeX for mathematical content
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- GETTING STARTED -->
-## Getting Started
-
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
-
-### Prerequisites
-
-
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- ROADMAP -->
 ## Roadmap
 
-- [x] Add Changelog
-- [x] Add back to top links
-- [ ] Add Additional Templates w/ Examples
-- [ ] Add "components" document to easily copy & paste sections of the readme
-- [ ] Multi-language Support
-    - [ ] Chinese
-    - [ ] Spanish
-
-See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues).
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Resources
+
+This section highlights the essential tools and platforms I use for learning, completing assignments, and developing projects. These resources provide both theoretical knowledge and practical skills, as well as helpful tools for creating diagrams and visual representations of complex ideas.
+
+Each of these resources not only helps in learning new skills but also plays a vital role in completing academic tasks such as creating diagrams, writing reports, and developing functional projects. They are fundamental to both personal growth and academic success.
+
+
+
+### Plataformas de Aprendizaje y Mejora de Habilidades:
+
+- **Codewars:** Mejora tus habilidades de resolución de problemas mediante desafíos de codificación en diversos lenguajes de programación.
+- **Codechef:** Ofrece una variedad de concursos para potenciar el pensamiento algorítmico y computacional a través de la programación competitiva.
+- **Codecademy:** Una plataforma interactiva para dominar conceptos de codificación y construir proyectos mediante tutoriales prácticos.
+- **freeCodeCamp:** Lecciones gratuitas y estructuradas en desarrollo web, ciencia de datos y más, con proyectos reales para consolidar tus habilidades.
+- **Khan Academy:** Tutoriales completos en matemáticas, ciencias de la computación y otros temas, útiles para aprender nuevos conceptos y reforzar conocimientos de aula.
+- **Dev.to:** Una plataforma comunitaria para aprender y compartir conocimientos sobre desarrollo de software, ideal para encontrar tutoriales y guías.
 
 ![Codewars](https://img.shields.io/badge/Codewars-B1361E?style=for-the-badge&logo=codewars&logoColor=white)
 ![Codechef](https://img.shields.io/badge/Codechef-5B4638?style=for-the-badge&logo=codechef&logoColor=white)
 ![Codecademy](https://img.shields.io/badge/Codecademy-1F4056?style=for-the-badge&logo=codecademy&logoColor=white)
 ![freeCodeCamp](https://img.shields.io/badge/freeCodeCamp-0A0A23?style=for-the-badge&logo=freeCodeCamp&logoColor=white)
 ![KhanAcademy](https://img.shields.io/badge/khan%20academy-14BF96?style=for-the-badge&logo=khanacademy&logoColor=white)
+![Dev.to](https://img.shields.io/badge/dev.to-0A0A0A?style=for-the-badge&logo=dev.to&logoColor=white)
+
+### Herramientas de Investigación y Documentación:
+
+- **Google Scholar:** Herramienta robusta para encontrar artículos académicos, libros y documentos de investigación que respaldan trabajos y proyectos.
+- **UML:** Herramienta estandarizada para crear diagramas que representan la estructura y comportamiento del software, esencial para el diseño y planificación de proyectos.
+
 ![GoogleScholar](https://img.shields.io/badge/google%20scholar-4285F4?style=for-the-badge&logo=googlescholar&logoColor=white)
+![UML](https://img.shields.io/badge/uml-FABD14?style=for-the-badge&logo=UML&logoColor=white)
+
+### Herramientas de Diseño y Visualización:
+
+- **Figma:** Potente herramienta de diseño para crear prototipos, wireframes y elementos visuales, ideal para tareas de UI/UX y presentaciones de proyectos.
+- **Excalidraw:** Herramienta intuitiva para crear diagramas estilo dibujo a mano, útil para explicar conceptos y esbozar ideas en asignaciones.
+- **Diagrams.net:** Versátil para construir diagramas de flujo, UML y otros elementos visuales estructurados, excelente para organizar y presentar información compleja.
+
 ![Figma](https://img.shields.io/badge/figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)
 ![Excalidraw](https://img.shields.io/badge/excalidraw-6965DB?style=for-the-badge&logo=excalidraw&logoColor=white)
 ![Diagrams.net](https://img.shields.io/badge/diagrams.net-F08705?style=for-the-badge&logo=diagrams.net&logoColor=white)
-![Dev.to](https://img.shields.io/badge/dev.to-0A0A0A?style=for-the-badge&logo=dev.to&logoColor=white)
-![UML](https://img.shields.io/badge/uml-FABD14?style=for-the-badge&logo=UML&logoColor=white)
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- LICENSE -->
 ## License
@@ -154,23 +143,6 @@ Project Link: [https://github.com/your_username/repo_name](https://github.com/yo
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
-
-* [Choose an Open Source License](https://choosealicense.com)
-* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-* [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
-* [Malven's Grid Cheatsheet](https://grid.malven.co/)
-* [Img Shields](https://shields.io)
-* [GitHub Pages](https://pages.github.com)
-* [Font Awesome](https://fontawesome.com)
-* [React Icons](https://react-icons.github.io/react-icons/search)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 
