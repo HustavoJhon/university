@@ -1,97 +1,126 @@
 #!/usr/bin/env
-# Autor: JHON GUSTAVO CCARITA VELASQUEZ
-# fecha: 13/09/2024
+# Author: JHON GUSTAVO CCARITA VELASQUEZ
+# Date: 13/09/2024
 
 # pip install rich
-from rich import print
+import os
+from rich import print, box
+from rich.table import Table
 
-print("[bold red]PRUEBA 1[/bold red]")
-print("[italic blue]Elaborar un programa para una organización reguladora ambiental, e ingresar: Monto Base en dólares, Categoría, Ruido en Decibeles, Porcentaje de Penalidad (según la tabla) y tipo de cambio a soles; para mostrar el Monto Base en soles, el Monto de Penalidad y el Monto a Pagar, ambos en soles, para una entidad.[/italic blue]\n")
+def clear_console():
+    """Clear the console screen."""
+    os.system('cls' if os.name == 'nt' else 'clear')
 
-print("[bold]SOLUCION:[/bold]")
+def show_noise_categories():
+    """Display noise categories with rich."""
+    noise_table = Table(title="Noise Categories", box=box.SIMPLE)
+    
+    noise_table.add_column("Category", justify="center", style="cyan", no_wrap=True)
+    noise_table.add_column("Description", justify="center", style="green")
+    noise_table.add_column("Penalty (%)", justify="center", style="red")
 
-print("""
-      [bold]RUIDO EN DECIBELES[/bold]
-      +===+============+    
-      | A | 50 o menos |
-      | B | 51 - 70    |
-      | C | 71 - 90    |
-      | D | 91 - 110   |
-      | E | mas de 110 |
-      +===+============+
-      """)
+    noise_table.add_row("A", "(50 or less)", "5%")
+    noise_table.add_row("B", "(51 - 70)", "7%")
+    noise_table.add_row("C", "(71 - 90)", "9%")
+    noise_table.add_row("D", "(91 - 110)", "12%")
+    noise_table.add_row("E", "(More than 110)", "15%")
+    
+    print(noise_table)
 
-# 1. Ingreso de variables requeridas.
-categoria = input("Ingrese la categoria:\t\t ")
-monto_base_dolares = int(input("Ingrese el monto en dolares:\t "+"$ "))
+def calculate_penalty(category, amount_soles):
+    """Calculate the penalty based on the category."""
+    penalty_percentages = {
+        'a': 5,
+        'b': 7,
+        'c': 9,
+        'd': 12,
+        'e': 15
+    }
+    
+    if category in penalty_percentages:
+        penalty = amount_soles * penalty_percentages[category] / 100
+        return penalty
+    return None
 
-# 2. Realizar el calculo del monto base convertido a soles en su respectiva variable.
-monto_en_soles = monto_base_dolares * 3.77
+def check_amount_range(category, amount_dollars):
+    """Check if the entered amount in dollars is within the valid range for the category."""
+    ranges = {
+        'a': (0, 50),
+        'b': (51, 70),
+        'c': (71, 90),
+        'd': (91, 110),
+        'e': (111, float('inf'))
+    }
+    
+    min_value, max_value = ranges[category]
+    return min_value <= amount_dollars <= max_value
 
-# CATEGORIA A
-if (categoria.lower() == 'a'):
-    if (monto_en_soles >= 50):
-        # 3. Realizar el calculo del monto de Penalidad en su respectiva variable.
-        penalidad = monto_en_soles * 5 / 100
-        # 4. Realizar el calculo del monto de a Pagar en su respectiva variable.
-        monto_pagar = (monto_en_soles - penalidad)
+def show_results(category, amount_soles, penalty, amount_to_pay):
+    """Display calculation results with rich."""
+    results_table = Table(title=f"Results for Category {category.upper()}", box=box.MINIMAL_DOUBLE_HEAD)
+    
+    results_table.add_column("Description", justify="left", style="bold")
+    results_table.add_column("Amount (S/.)", justify="right", style="bold green")
+    
+    results_table.add_row("Base amount in soles", f"S/. {amount_soles:.2f}")
+    results_table.add_row("Penalty amount", f"S/. {penalty:.2f}")
+    results_table.add_row("Total amount to pay", f"S/. {amount_to_pay:.2f}")
+    
+    print(results_table)
+
+while True:
+    try:
+        # Clear console at the start
+        clear_console()
         
-        print("\n[bold]CATEGORIA A[/bold]")
-        # 5. Muestra las variables solicitadas, segun el tipo de dato que corresponde.
-        print(f"\nMonto base en soles:\t S/.{monto_en_soles}")
-        print(f"Monto de penalidad:\t S/.{round(penalidad, 2)}")
-        print(f"Monto a pagar:\t\t S/.{round(monto_pagar,2)}\n")
-    else:
-        print(f"Su monto base es mayor o igual a 50")
+        # Program description
+        print("[bold red]TEST 1[/bold red]")
+        print("[italic blue]This program calculates the penalty amount for an entity based on a noise category and a base amount in dollars.[/italic blue]\n")
 
-# CATEGORIA B
-if (categoria.lower() == 'b'):
-    if (monto_en_soles >= 51 and monto_en_soles <= 70):
-        penalidad = monto_en_soles * 7 / 100
-        monto_pagar = (monto_en_soles - penalidad)
-        
-        print("\n[bold]CATEGORIA B[/bold")
-        print(f"\nMonto base en soles:\t S/.{monto_en_soles}")
-        print(f"Monto de penalidad:\t S/.{round(penalidad, 2)}")
-        print(f"Monto a pagar:\t\t S/.{round(monto_pagar,2)}")
-    else:
-        print(f"Su monto base es menor o igual a 50 y mayor igual a 70")
+        show_noise_categories()
 
-# CATEGORIA C
-if (categoria.lower() == 'c'):
-    if (monto_en_soles >= 71 and monto_en_soles <= 90):
-        penalidad = monto_en_soles * 9 / 100
-        monto_pagar = (monto_en_soles - penalidad)
-        
-        print("\n[bold]CATEGORIA C[/bold]")
-        print(f"\nMonto base en soles:\t S/.{monto_en_soles}")
-        print(f"Monto de penalidad:\t S/.{round(penalidad, 2)}")
-        print(f"Monto a pagar:\t S/.{round(monto_pagar,2)}")
-    else:
-        print(f"Su monto base es menor o igual a 71 y mayor igual a 90")
+        # Input data
+        category = input("Enter the noise category:\t\t").lower()
+        if category not in ['a', 'b', 'c', 'd', 'e']:
+            print("[bold red]Error: Please enter a valid category (A, B, C, D, E).[/bold red]")
+            continue
 
-# CATEGORIA D       
-if (categoria.lower() == 'd'):
-    if (monto_en_soles >= 91 and monto_en_soles <= 110):
-        penalidad = monto_en_soles * 12 / 100
-        monto_pagar = (monto_en_soles - penalidad)
-        
-        print("\n[bold]CATEGORIA D[/bold]")
-        print(f"\nMonto base en soles:\t S/.{monto_en_soles}")
-        print(f"Monto de penalidad:\t S/.{round(penalidad, 2)}")
-        print(f"Monto a pagar:\t S/.{round(monto_pagar,2)}")
-    else:
-        print(f"Su monto base es menor o igual a 91 y mayor igual a 110")
+        base_amount_dollars = float(input("Enter the base amount in dollars:\t"))
 
-# CATEGORIA E    
-if (categoria.lower() == 'e'):
-    if (monto_en_soles > 110):
-        penalidad = monto_en_soles * 15 / 100
-        monto_pagar = (monto_en_soles - penalidad)
+        # Validate if the amount in dollars is within the range of the category
+        if not check_amount_range(category, base_amount_dollars):
+            min_value, max_value = {
+                'a': ("50 or less"),
+                'b': ("between 51 and 70"),
+                'c': ("between 71 and 90"),
+                'd': ("between 91 and 110"),
+                'e': ("more than 110")
+            }[category]
+            print(f"[bold red]Error: For category {category.upper()}, the base amount in dollars must be {min_value}.[/bold red]")
+            continue
+
+        # Convert dollars to soles
+        exchange_rate = 3.77
+        amount_soles = base_amount_dollars * exchange_rate
+
+        # Calculate penalty
+        penalty = calculate_penalty(category, amount_soles)
         
-        print("\n[bold]CATEGORIA E[/bold]")
-        print(f"\nMonto base en soles:\t S/.{monto_en_soles}")
-        print(f"Monto de penalidad:\t S/.{round(penalidad, 2)}")
-        print(f"Monto a pagar:\t\t S/.{round(monto_pagar,2)}")
-    else:
-        print(f"Su monto base es menor a 110")
+        # Calculate total amount to pay
+        amount_to_pay = amount_soles - penalty
+
+        # Clear console before showing results
+        clear_console()
+
+        # Show results
+        show_results(category, amount_soles, penalty, amount_to_pay)
+
+    except ValueError:
+        print("[bold red]Error: Please enter a valid numeric value for the amount.[/bold red]")
+    
+    # Option to continue or exit
+    repeat = input("Do you want to perform another calculation? (y/n): ").lower()
+    if repeat != 'y':
+        clear_console()
+        print("[bold green]Thank you for using the program. Goodbye![/bold green]")
+        break
