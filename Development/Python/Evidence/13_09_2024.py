@@ -2,6 +2,15 @@
 # Author: JHON GUSTAVO CCARITA VELASQUEZ
 # Date: 13/09/2024
 
+#? Elaborar un programa para una organizacion reguladora ambiental, e ingresar: Monto Base en dolares, categori, ruido en decibeles, porcentaje de penalidad (segun la tabla) y tipo de cambio a soles; para mostrar el monto base en soles, el monto de penalidad y el monto a pagar, ambos en soles, para una entidad.
+
+#! Indicadores
+#* 1. Ingresar todas las variables requeridas, segun el tipo de dato que corresponde.
+#* 2. Realizar el calculo del monto base convertido a soles en su respectiva variable.
+#* 3. Realizar el calculo del monto de penalidad en su respectiva variable.
+#* 4. Realizar el calculo del monto de pagar en su respectiva variable.
+#* 5. Muestra las variables solicitadas, segun el tipo de dato que corresponde.
+
 # pip install rich
 import os
 from rich import print, box
@@ -123,4 +132,4 @@ while True:
     if repeat != 'y':
         clear_console()
         print("[bold green]Thank you for using the program. Goodbye![/bold green]")
-        break
+        break   
