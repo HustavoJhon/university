@@ -133,3 +133,35 @@ while True:
         clear_console()
         print("[bold green]Thank you for using the program. Goodbye![/bold green]")
         break   
+
+'''
+# Función principal para calcular las penalidades
+def calcular_penalidad(monto_base_usd, porcentaje_penalidad, tipo_cambio):
+    # Convertir el monto base de dólares a soles
+    monto_base_soles = monto_base_usd * tipo_cambio
+    
+    # Calcular el monto de penalidad en soles
+    monto_penalidad_soles = monto_base_soles * (porcentaje_penalidad / 100)
+    
+    # Calcular el monto total a pagar en soles
+    monto_total_soles = monto_base_soles + monto_penalidad_soles
+    
+    # Mostrar resultados
+    print(f"Monto base en soles: S/ {monto_base_soles:.2f}")
+    print(f"Monto de penalidad en soles: S/ {monto_penalidad_soles:.2f}")
+    print(f"Monto total a pagar en soles: S/ {monto_total_soles:.2f}")
+    
+    return monto_base_soles, monto_penalidad_soles, monto_total_soles
+
+# Solicitar los datos al usuario
+monto_base_usd = float(input("Ingrese el monto base en dólares: "))
+categoria = input("Ingrese la categoría: ")
+ruido_decibeles = float(input("Ingrese el ruido en decibeles: "))
+porcentaje_penalidad = float(input("Ingrese el porcentaje de penalidad: "))
+tipo_cambio = float(input("Ingrese el tipo de cambio (de USD a soles): "))
+
+# Llamar a la función para realizar el cálculo
+calcular_penalidad(monto_base_usd, porcentaje_penalidad, tipo_cambio)
+'''
+
+
