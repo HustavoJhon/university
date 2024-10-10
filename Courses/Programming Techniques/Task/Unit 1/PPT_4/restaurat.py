@@ -1,12 +1,9 @@
-print("\n === MENU ===")
-print("""
-    1. Sopa
-    2. Arroz con pollo
-    3. Refresco
-""")
+print("\n========== MENU ==========")
+print("1. Sopa")
+print("2. Arroz con pollo")
+print("3. Refresco")
 
-print("\n === INGRESO DE DATOS ===")
-
+print("\n ===== INGRESO DE DATOS =====")
 precio_sopa = float(input("Ingrese precio de Sopa:\t"))
 cantidad_sopa = int(input("Ingrese cuantos platos de Sopa:\t"))
 
@@ -22,7 +19,7 @@ sub_total_refresco = precio_refresco + cantidad_refresco
 
 monto_pagar = sub_total_sopa + sub_total_arroz + sub_total_refresco
 
-print("=== reporte ===")
+print("========== REPORTE ===========")
 print("El Sub total de Sopa es:\t\t", sub_total_sopa)
 print("El Sub total de Arroz es:\t\t", sub_total_arroz)
 print("El Sub total de Refresco es:\t\t", sub_total_refresco)
