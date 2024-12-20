@@ -140,9 +140,8 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Gustavo Jhon🐧 - [@hustavoJhon](https://x.com/hustavoJhon) - email@example.com
+Gustavo Jhon🐧 - [@hustavoJhon](https://x.com/hustavoJhon)
 
-Project Link: [https://github.com/your_username/repo_name](https://github.com/your_username/repo_name)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
