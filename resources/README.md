@@ -21,7 +21,6 @@
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#resources">Resources</a></li>
     <li><a href="#license">License</a></li>
@@ -34,14 +33,10 @@
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Built With
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <!-- ROADMAP -->
 ## Roadmap
 
-[![Python](https://img.shields.io/badge/Python-3776AB.svg?style=for-the-badge&logo=Python&logoColor=white)](./resources/development/Python/)
+[![Python](https://img.shields.io/badge/Python-3776AB.svg?style=for-the-badge&logo=Python&logoColor=white)](./development/Python/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
