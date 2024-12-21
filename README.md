@@ -34,7 +34,8 @@
     <a href="https://github.com/othneildrew/Best-README-Template/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 
-[![Python](https://img.shields.io/badge/Python-3776AB.svg?style=for-the-badge&logo=Python&logoColor=white)](./resources/development/Python/)
+
+[![Discord](https://img.shields.io/badge/Discord-5865F2.svg?style=for-the-badge&logo=Discord&logoColor=white)](./resources/development/Python/)
 
 </div>
 
@@ -81,6 +82,8 @@ This repository includes resources and projects built using the following techno
 
 <!-- ROADMAP -->
 ## Roadmap
+
+[![Python](https://img.shields.io/badge/Python-3776AB.svg?style=for-the-badge&logo=Python&logoColor=white)](./resources/development/Python/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
