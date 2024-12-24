@@ -35,9 +35,14 @@
 <summary>Python</summary>
 
 [![Python](https://img.shields.io/badge/Python-3776AB.svg?style=for-the-badge&logo=Python&logoColor=white)](./development/Python/)
+[![PyPI](https://img.shields.io/badge/PyPI-3775A9.svg?style=for-the-badge&logo=PyPI&logoColor=white)](./development/Python/)
+[![PyCharm](https://img.shields.io/badge/PyCharm-000000.svg?style=for-the-badge&logo=PyCharm&logoColor=white)](./development/Python/)
+[![Jupyter](https://img.shields.io/badge/Jupyter-F37626.svg?style=for-the-badge&logo=Jupyter&logoColor=white)](./development/Python/)
+[![NumPy](https://img.shields.io/badge/NumPy-013243.svg?style=for-the-badge&logo=NumPy&logoColor=white)](./development/Python/)
+
 
 ```bash
-Csharp
+Python
 ------
 │  
 ├── Tutorials
