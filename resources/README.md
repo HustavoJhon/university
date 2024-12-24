@@ -31,23 +31,32 @@
 <!-- ROADMAP -->
 ## Roadmap
 
+<details>
+<summary>Python</summary>
+
 [![Python](https://img.shields.io/badge/Python-3776AB.svg?style=for-the-badge&logo=Python&logoColor=white)](./development/Python/)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+```bash
+Csharp
+------
+│  
+├── Tutorials
+│   ├── @Nacho_Cabanes
+│   ├── @LaCasaInformatica
+│   └── @hdeleon.net
+│
+├── Projects 
+│    ├── Operators
+│    ├── Conditionals
+│    ├── Loops
+│    ├── Functions
+│    └── Modules
+├── Csharp.csproj
+├── Csharp.sln
+└── .gitignore
+```
 
-## Resources
+</details> 
 
-
-<!-- LICENSE -->
-## License
-
-Distributed under the MIT License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- CONTACT -->
-## Contact
-
-Gustavo Jhon🐧 - [@hustavoJhon](https://x.com/hustavoJhon)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
