@@ -63,5 +63,29 @@ Python
 
 </details> 
 
+<details>
+<summary>Pseint</summary>
+
+```bash
+Python
+------
+│  
+├── Tutorials
+│   ├── @Nacho_Cabanes
+│   ├── @LaCasaInformatica
+│   └── @hdeleon.net
+│
+├── Projects 
+│    ├── Operators
+│    ├── Conditionals
+│    ├── Loops
+│    ├── Functions
+│    └── Modules
+├── Csharp.csproj
+├── Csharp.sln
+└── .gitignore
+```
+
+</details> 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
