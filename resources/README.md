@@ -26,6 +26,10 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
+This repository contains resources related to various academic subjects, primarily aimed at supporting students and educators in the field of Systems Engineering. It includes materials such as lectures, notes, and reference documents that cover a wide range of topics relevant to the curriculum.
+
+The resources here are organized to make it easy to navigate and find the necessary content for your studies or teaching. Whether you’re preparing for exams, seeking additional learning materials, or looking to share knowledge, this repository is designed to support your academic journey.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ROADMAP -->
