@@ -35,6 +35,34 @@ The resources here are organized to make it easy to navigate and find the necess
 <!-- ROADMAP -->
 ## Roadmap
 
+### math
+
+<summary>Discrete</summary>
+
+```bash
+Discrete
+------
+│  
+├── Tutorials
+│   ├── @Nacho_Cabanes
+│   ├── @LaCasaInformatica
+│   └── @hdeleon.net
+│
+├── Projects 
+│    ├── Operators
+│    ├── Conditionals
+│    ├── Loops
+│    ├── Functions
+│    └── Modules
+├── Csharp.csproj
+├── Csharp.sln
+└── .gitignore
+```
+
+</details> 
+
+### development
+
 <details>
 <summary>Python</summary>
 
