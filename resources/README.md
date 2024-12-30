@@ -37,6 +37,7 @@ The resources here are organized to make it easy to navigate and find the necess
 
 ### math
 
+<details>
 <summary>Discrete</summary>
 
 ```bash
