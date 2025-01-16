@@ -24,14 +24,14 @@
   <p align="center">
     Welcome to my University Projects Repository
     <br />
-    <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the courses »</strong></a>
+    <a href="https://github.com/hustavojhon/university"><strong>Explore the courses »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a>
+    <a href="https://github.com/hustavojhon/university">View Demo</a>
     ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com/hustavojhon/university/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com/hustavohjon/university/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 
 
@@ -71,11 +71,9 @@ This repository contains my notes, assignments, and projects developed during my
 
 This repository includes resources and projects built using the following technologies:
 
-- **Programming Languages:** C#, Python, JavaScript
-- **Frameworks:** ASP.NET Core, Flask
-- **Libraries:** NumPy, Pandas, Matplotlib
-- **Tools:** Docker, Git, Visual Studio Code
-- **Databases:** MySQL, SQLite
+- **Programming Languages:** C++, Python, Java
+- **Tools:** Docker, Git
+- **Databases:** SQL
 - **Other:** Markdown for documentation, LaTeX for mathematical content
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -122,10 +120,12 @@ Each of these resources not only helps in learning new skills but also plays a v
 ### Herramientas de Diseño y Visualización:
 
 - **Figma:** Potente herramienta de diseño para crear prototipos, wireframes y elementos visuales, ideal para tareas de UI/UX y presentaciones de proyectos.
+- **Kaggle:** Plataforma enfocada en ciencia de datos que permite explorar datasets, construir notebooks interactivos y visualizar resultados de manera clara. Ideal para análisis exploratorio, modelado y presentación de hallazgos en proyectos de datos.
 - **Excalidraw:** Herramienta intuitiva para crear diagramas estilo dibujo a mano, útil para explicar conceptos y esbozar ideas en asignaciones.
 - **Diagrams.net:** Versátil para construir diagramas de flujo, UML y otros elementos visuales estructurados, excelente para organizar y presentar información compleja.
 
 ![Figma](https://img.shields.io/badge/figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)
+![Kaggle](https://img.shields.io/badge/Kaggle-035a7d?style=for-the-badge&logo=kaggle&logoColor=white)
 ![Excalidraw](https://img.shields.io/badge/excalidraw-6965DB?style=for-the-badge&logo=excalidraw&logoColor=white)
 ![Diagrams.net](https://img.shields.io/badge/diagrams.net-F08705?style=for-the-badge&logo=diagrams.net&logoColor=white)
 
