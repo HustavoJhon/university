@@ -1,0 +1,62 @@
+/* Sección About */
+.section-about {
+    padding: 40px 20px;
+    max-width: 1000px;
+    margin: auto;
+    text-align: center;
+}
+
+.section-about h2 {
+    color: #00796b;
+    margin-bottom: 15px;
+}
+
+#mision-vision {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+}
+
+#mision-vision div {
+    flex: 1 1 300px;
+    background: #f1f8f6;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+#valores ul {
+    list-style: none;
+    padding: 0;
+}
+
+#valores li {
+    margin: 8px 0;
+    font-size: 1.1rem;
+}
+
+/* Equipo */
+.equipo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.miembro {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.miembro img {
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.miembro:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
