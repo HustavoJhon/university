@@ -1,0 +1,87 @@
+/* ===== PÁGINA DE CONTACTO ===== */
+main.contacto {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+main.contacto h1 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #2e8b57;
+}
+
+main.contacto p {
+  margin-bottom: 30px;
+  color: #555;
+}
+
+/* CONTENEDOR FLEXIBLE */
+.contacto-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+/* FORMULARIO */
+.formulario {
+  flex: 1 1 300px;
+  background: #fff;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.formulario label {
+  display: block;
+  margin-top: 12px;
+  font-weight: bold;
+  color: #333;
+}
+
+.formulario input,
+.formulario textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.formulario button {
+  margin-top: 15px;
+  width: 100%;
+  padding: 10px;
+  background: #2e8b57;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.formulario button:hover {
+  background: #256d45;
+}
+
+/* INFO DE CONTACTO */
+.info-contacto {
+  flex: 1 1 250px;
+  background: #f9f9f9;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.info-contacto h2 {
+  margin-bottom: 10px;
+  color: #2e8b57;
+}
+
+.info-contacto p {
+  margin-bottom: 8px;
+  color: #333;
+}
