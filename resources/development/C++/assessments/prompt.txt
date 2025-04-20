@@ -1,0 +1,31 @@
+Prompt:
+Actúa como un profesor experto en programación en C++ y genera un programa completo que sirva como ejercicio o evaluación práctica.
+El programa debe desarrollarse únicamente con los temas vistos hasta la Semana 7 del curso, sin utilizar conceptos avanzados como manejo de archivos, memoria dinámica, herencia, plantillas ni polimorfismo.
+✅ Temario permitido
+Semana 1: Tipos de Datos Abstractos (TDA) y Clases
+Conceptos de abstracción, encapsulamiento y definición de clases simples con atributos y métodos.
+Semana 2: Arrays Unidimensionales (Vectores)
+Declaración, inicialización y acceso a elementos.
+Operaciones básicas: búsqueda, promedio, suma, etc.
+Semana 3: Arrays Bidimensionales (Matrices)
+Definición, acceso y operaciones simples (sumas, promedios).
+Semana 4: Algoritmos de Actualización, Búsqueda y Ordenación
+Búsqueda secuencial y binaria.
+Ordenación por método de burbuja (explicado paso a paso).
+Semana 5: Registros (struct) y Uniones
+Definición y uso de estructuras, anidación de estructuras y typedef.
+Semana 6: Operaciones con Cadenas de Caracteres
+Uso de funciones de la librería <cstring>: strlen(), strcpy(), strcat(), strstr().
+Manipulación básica de cadenas tipo char[].
+Semana 7: Uso de Punteros con Arreglos y Estructuras
+Punteros y Arreglos: acceso, modificación, suma, promedio, multiplicación, inversión y comparación de arreglos.
+Punteros y Estructuras: acceso y modificación de miembros, cálculo de promedios, paso de estructuras por puntero a funciones y manejo de arreglos de estructuras mediante punteros.
+⚙️ Requisitos del código
+El resultado debe ser un solo archivo C++ (.cpp) completamente funcional.
+Debe estar bien documentado, con comentarios que expliquen claramente la lógica y el propósito de cada parte del código.
+El programa debe usar estructuras de control básicas (if, while, for) y funciones propias para modularizar el código.
+Solo se deben usar los temas incluidos en el temario permitido.
+Debe respetar buenas prácticas: nombres claros, validaciones completas, menú funcional y ordenado.
+🎯 Objetivo final
+Generar directamente el código completo y funcional en C++, bien comentado, que implemente el caso que se indique (por ejemplo, un sistema de gestión o administración), aplicando exclusivamente los temas del temario permitido.
+El resultado debe estar listo para compilar y servir como evidencia de aplicación práctica de los conocimientos hasta la semana 7.
