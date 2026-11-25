@@ -23,7 +23,18 @@
 **Checklist técnico (lo hace el responsable de la laptop: Jhon Gustavo)**
 - [ ] SQL Server 2022 **Developer** + SSMS abiertos como `sysadmin`.
 - [ ] Copiar `AkilFlowOperaciones.bak` y `dwh_AkilFlow.bak` a `C:\AkilFlow\Entrega\` y ejecutar `00_Restaurar_Proyecto.sql` con **F5** (< 1 min). **No se ejecutan los scripts 01–05 uno por uno**: el docente pidió restaurar. Así la demo parte del mismo estado que el informe.
-- [ ] Abrir `01_Demo_En_Clase.sql`. Cada integrante ejecuta **su bloque** (seleccionar de un encabezado al siguiente + F5): A Andre · B Amy · C, D y E Jessica · F y G Jhon Gustavo.
+- [ ] Ejecutar `02_Consultas_Por_Fase/00_Preparar_Logins_Modo_Mixto.sql` con **F5**. Activa el modo mixto, desbloquea los 5 logins y amplía la auditoría a todas las tablas. Si dice **PENDIENTE**: clic derecho en el servidor → **Reiniciar**, y volver a ejecutarlo hasta que todo diga **OK**.
+- [ ] **Dejar abiertas 3 conexiones de rol** (*Conectar → Autenticación de SQL Server*, marcando *Certificado de servidor de confianza*), cada una con su archivo ya cargado en una pestaña:
+
+  | Pestaña | Inicio de sesión | Contraseña | Archivo (`02_Consultas_Por_Fase/`) | Quién lo usa |
+  |---|---|---|---|---|
+  | Operador | `login_operador` | `Akil#Operador2026` | `02_Rol_Operador.sql` | Amy |
+  | Contador | `login_contador` | `Akil#Contador2026` | `05_Rol_Contador.sql` | Amy |
+  | Analista BI | `login_analista_bi` | `Akil#AnalistaBI2026` | `06_Rol_Analista_BI.sql` | Jhon Gustavo |
+
+  La barra inferior de cada pestaña muestra el login conectado: así el docente ve que **no** es el administrador.
+- [ ] Hacer una prueba en seco de esas 3 pestañas (F5): deben terminar en `14 de 14`, `9 de 9` y `8 de 8 pruebas correctas`. Después **volver a restaurar** (`00_Restaurar_Proyecto.sql` + `00_Preparar_Logins_Modo_Mixto.sql`) para empezar limpio.
+- [ ] En la conexión de **Windows (administrador)**, abrir `01_Demo_En_Clase.sql` y `16_Intentos_Denegados.sql`. Cada integrante ejecuta **su bloque** (seleccionar de un encabezado al siguiente + F5): A Andre · B (solo B.2, el cifrado) Amy · C, D y E Jessica · F y G Jhon Gustavo.
 - [ ] Zoom del editor al **150 %** (Ctrl + rueda) y la grilla de resultados a fuente 12 (*Herramientas → Opciones → Fuentes y colores → Grid Results*).
 - [ ] **Ctrl + M** activado antes del bloque A (plan de ejecución real).
 - [ ] Desactivar notificaciones de Windows (Asistente de concentración) y cerrar WhatsApp, correo y Teams.
@@ -44,6 +55,8 @@
 | Plan estimado (sin ejecutar) | **Ctrl + L** |
 | Mostrar/ocultar resultados | **Ctrl + R** |
 | Pestaña Mensajes (STATISTICS IO, Msg 229) | clic en "Mensajes" |
+| Cambiar de pestaña (operador → contador → admin) | **Ctrl + Tab** |
+| Ver el login de la pestaña actual | barra de estado inferior del editor |
 
 ---
 
@@ -115,21 +128,28 @@
 > - **Contador**: ve montos y costos, nunca nombres ni teléfonos.
 > Los permisos nunca se dan a personas, siempre a roles. Y usamos `DENY` explícito, que **gana sobre cualquier GRANT**."
 
-**🖥️ DEMO SSMS — Bloque B de `01_Demo_En_Clase.sql` (8:00 – 9:15)**
-1. B.1–B.3: logins → users → roles, y el operador registra una encomienda por el SP (se cifra sola).
-2. B.4 (el error sale en rojo):
-   > "Ahí está el **Msg 229**: *DELETE permission was denied*. El operador no puede borrar evidencia."
-3. B.5 y el **Msg 230**:
-   > "Y si intenta bajar el precio de un envío, el error es **a nivel de columna**: solo puede modificar `estado` y `viaje_id`."
-4. B.7 (contador):
-   > "El contador ve la vista financiera, pero al pedir `remitente_cif` recibe el **Msg 230**."
+**🖥️ DEMO SSMS — Ingresando como cada rol (8:00 – 9:15)**
+
+1. **Pestaña Operador** (conectada como `login_operador` / `Akil#Operador2026`) → **F5** en `02_Rol_Operador.sql` (≈ 35 s):
+   > "Aquí no estoy como administrador: entré con **usuario y contraseña del operador**, como lo haría un despachador de la agencia. La primera tabla lo confirma: login `login_operador`, usuario `usr_operador`, rol `Rol_Operador`."
+
+   Bajar a la **tabla final** (resumen):
+   > "El script prueba 14 acciones. **Registrar una encomienda** por el procedimiento: PERMITIDO, y se guardó cifrada sola. **Cambiar el estado**: PERMITIDO. Pero **borrar** da **Msg 229** (el operador no puede borrar evidencia), **bajar el precio** da **Msg 230** (a nivel de **columna**: solo puede tocar `estado` y `viaje_id`), leer los correos del personal o la vista financiera da **Msg 229** y abrir la llave AES da **Msg 15151**. **14 de 14 correctas**: lo esperado coincide con lo que respondió SQL Server."
+
+2. **Pestaña Contador** (conectada como `login_contador` / `Akil#Contador2026`) → **F5** en `05_Rol_Contador.sql` (≈ 25 s):
+   > "El contador sí ve ingresos, costos y margen por viaje. Pero si pide `remitente_cif` o hace un `SELECT *` de encomiendas, recibe **Msg 230**: nunca ve datos personales. **9 de 9 correctas**."
+
+3. *(Si sobra tiempo)* Pestaña de **administrador** → `07_Matriz_Permisos_y_REVOKE.sql`, consulta 7.2:
+   > "Esta matriz resume los 4 roles: SÍ o no por tabla y permiso, calculado por SQL Server, no escrito a mano."
+
+> 💡 Si el docente pide probar otro rol, se abre una conexión nueva con las credenciales de la **sección 9** y se ejecuta su archivo (03 supervisor, 04 auditor).
 
 **[Diapositiva 8 — Cifrado] (9:15 – 10:15)**
 > "Para los datos personales usamos la **jerarquía completa**: la Service Master Key de la instancia protege la **Database Master Key**, esta protege al **certificado** y el certificado protege la **llave simétrica AES de 256 bits**.
 > Ciframos nombre, DNI o RUC y teléfono de remitentes y destinatarios en columnas `VARBINARY(256)`. Lo más importante: **validamos** dentro de una transacción que todo se descifrara bien, luego **eliminamos las columnas en texto plano** e hicimos un `REBUILD`, porque `DROP COLUMN` deja los bytes en las páginas.
-> *(B.6)* El auditor ve `0x000E4F...` y, si intenta descifrar, obtiene `NULL`. Si intenta abrir la llave, recibe el **Msg 15151**. Para registrar, el operador usa un procedimiento `EXECUTE AS OWNER` que cifra dentro del servidor."
+> *(Pestaña admin, B.2 de `01_Demo_En_Clase.sql`)* "Así se ve la columna **sin la llave**: `0x004F26...`. Y así **con la llave abierta**: el nombre legible. En la prueba del operador vieron que él tampoco puede abrir la llave (**Msg 15151**): para registrar usa un procedimiento `EXECUTE AS OWNER` que cifra dentro del servidor. Un auditor que intenta descifrar obtiene `NULL`."
 
-> *(B.8)* "Y la diferencia entre **REVOKE y DENY**: hacemos `REVOKE` del `UPDATE(estado)` en viajes y el operador recibe **Msg 229**, porque nadie le concede ya ese permiso. Luego lo volvemos a conceder con `GRANT`."
+> *(Verbal, sin demo)* "Y la diferencia entre **REVOKE y DENY**: `REVOKE` retira lo concedido y deja el permiso neutro; `DENY` lo prohíbe aunque otro rol lo conceda. Está demostrado en el archivo 07."
 
 **Transición (10:15 – 10:30)**
 > "Ya sabemos quién puede hacer qué. Ahora, **¿cómo sabemos lo que realmente hicieron y cómo sobrevivimos a un desastre?** Jessica."
@@ -142,6 +162,10 @@
 | ¿Por qué cifrado simétrico y no asimétrico directo? | AES es cientos de veces más rápido para miles de filas. El certificado asimétrico solo protege la llave AES (*envelope encryption*). |
 | ¿Cuál es la diferencia con TDE y Always Encrypted? | **TDE** cifra los archivos en disco, pero quien tiene `SELECT` ve el texto plano. **Always Encrypted** cifra en el cliente y ni el DBA ve los datos, pero obliga a cambiar el driver. **El cifrado de columnas** protege campos puntuales dentro del servidor y se combina con RBAC. |
 | ¿Por qué el operador no recibe permiso sobre la llave? | Por mínimo privilegio. Usa un SP `WITH EXECUTE AS OWNER` que abre y cierra la llave internamente, y el SP está auditado. |
+| ¿Cómo prueban que de verdad entraron como el rol y no como administrador? | La primera tabla muestra `SUSER_SNAME()` = `login_operador`, `USER_NAME()` = `usr_operador` e `IS_ROLEMEMBER('Rol_Operador')` = 1. La barra inferior de SSMS también muestra el login. Además, un administrador **no** recibiría Msg 229. |
+| ¿Por qué no salen los errores en rojo? | Cada prueba va dentro de `TRY/CATCH` y el error se guarda en la tabla resumen (`mensaje_sql_server`), para que el script siga y muestre todas. Es el **mismo** error de SQL Server: si lo escribo suelto en una consulta nueva (`DELETE FROM dbo.encomiendas WHERE encomienda_id = -1`), sale en rojo con el Msg 229. |
+| ¿Qué pasa si el login existe pero no tiene usuario en la base? | Se autentica en la instancia (capa 1), pero no entra a la base (capa 2): **Msg 916**. Por eso el analista BI no puede leer `AkilFlowOperaciones`. |
+| ¿`EXECUTE AS LOGIN` o `EXECUTE AS USER`? | `LOGIN` suplanta en la instancia y valida las dos capas. `USER` solo suplanta dentro de una base. Los archivos de rol usan `EXECUTE AS LOGIN` **solo** si se ejecutan desde el administrador; si se entra con el login del rol, no suplantan nada. |
 | ¿Cuántos bytes ocupa un dato cifrado? | Encabezado (≈ 20 B) + IV (16 B) + texto con relleno a bloques de 16 B. Por eso limitamos los parámetros a `NVARCHAR(80)` (160 B), para no pasar de 256. |
 | ¿Por qué el `REBUILD` después del `DROP COLUMN`? | `DROP COLUMN` solo cambia los metadatos; los bytes del texto plano siguen en las páginas de datos y podrían leerse con `DBCC PAGE`. El *rebuild* reescribe las páginas sin ellos. |
 
@@ -152,8 +176,13 @@
 **[Diapositiva 9 — SQL Server Audit] (10:30 – 11:30)**
 > "La auditoría tiene dos niveles. En `master`, el **Server Audit** define el destino: archivos `.sqlaudit` en `C:\AkilFlow\Audit`, escritos de forma asíncrona cada segundo. En la base, la **Database Audit Specification** dice qué se audita: `SELECT, INSERT, UPDATE, DELETE` sobre encomiendas y viajes, quién ejecuta el procedimiento que descifra y cualquier cambio de permisos."
 
-**🖥️ DEMO SSMS — Bloque C (11:30 – 12:15)**
-> *(Bloque C)* "Vemos la encomienda antes y después del `UPDATE`, el operador intenta borrarla y aquí está la bitácora: el `UPDATE` y, lo más valioso, este **`DL` con `succeeded = 0` de `usr_operador`**: el intento de borrado quedó registrado. Eso es **no repudio**. Un trigger no puede capturar ni los SELECT ni los intentos fallidos."
+**🖥️ DEMO SSMS — ¿Quién intentó entrar a donde no tenía permiso? (11:30 – 12:15)**
+
+Pestaña de **administrador** → **F5** en `16_Intentos_Denegados.sql`:
+> "Hace tres minutos Amy entró como operador y como contador e intentó cosas prohibidas. **Todo quedó registrado.** En 16.2 vemos cada intento denegado: la hora, el login `login_operador`, la tabla `encomiendas`, la acción `DELETE` y la **sentencia exacta** que escribió. En 16.3 se ve el resumen por usuario, en 16.4 qué tablas intentaron usar y quién, y en 16.5 los inicios de sesión con contraseña incorrecta. Eso es **no repudio**: un trigger no puede capturar ni los SELECT ni los intentos fallidos."
+
+> Lo mismo sin consultas: *Seguridad → Auditorías → Audit_AkilFlow → clic derecho → Ver registros de auditoría*, filtrando *Correcto = False*.
+> *(Plan B: el bloque C de `01_Demo_En_Clase.sql` muestra el `UPDATE` y el `DL` con `succeeded = 0`.)*
 
 **[Diapositiva 10 — Extended Events] (12:15 – 12:45)**
 > *(Bloque D)* "Para el monitoreo creamos la sesión `XE_ConsultasLentas_AkilFlow` con el filtro `duration > 2000000`. Está en **microsegundos**, o sea, 2 segundos. El conteo rápido no se registró y el `WAITFOR` de 3 segundos sí, con su duración, usuario y aplicación. El filtro se evalúa antes de escribir, así que el costo es mínimo."
@@ -177,6 +206,8 @@
 | ¿Por qué en la base DR hiciste `OPEN MASTER KEY ... ALTER MASTER KEY ADD ENCRYPTION BY SERVICE MASTER KEY`? | La DMK restaurada quedó cifrada con la Service Master Key "de origen". La abrimos con su contraseña y la volvemos a vincular a la SMK de esta instancia para que el certificado pueda abrir la llave AES. |
 | ¿Qué es un *tail-log backup*? | Un último `BACKUP LOG ... WITH NO_TRUNCATE` hecho después del fallo, si el archivo de log sobrevive. Lleva el RPO a casi 0. |
 | ¿Extended Events o Profiler? | Profiler está obsoleto: filtra después de capturar y tiene alto costo. XE filtra en el origen con predicados y su impacto es mínimo. |
+| ¿La auditoría registra un intento aunque el script lo capture con TRY/CATCH? | Sí. La auditoría se dispara en la **comprobación de permisos**, antes de que el error llegue al cliente. Por eso aparecen los intentos de la demo de Amy. |
+| ¿Por qué ampliaron la auditoría con `00_Preparar_Logins_Modo_Mixto.sql`? | La especificación original vigilaba `encomiendas`, `viajes` y el SP de descifrado. La ampliamos a `usuarios_sistema`, la vista financiera, sucursales, rutas, vehículos y todo el esquema del DWH, para registrar **cualquier** intento denegado. |
 | ¿Por qué `ON_FAILURE = CONTINUE`? | Para que una falla del disco de auditoría no detenga la operación de las agencias. En entornos regulados (bancos) se usaría `SHUTDOWN`. |
 
 ---
@@ -193,7 +224,7 @@
 **[Diapositiva 13 — Hallazgos OLAP] (16:15 – 17:00)**
 > *(Bloque G)* "Con `RANK()` y `SUM() OVER` encontramos una **paradoja**: la ruta **Tarapoto–Chiclayo** factura el 18 % del total, pero tiene **margen negativo**. Las rutas cortas de Bagua Grande y Jaén superan el 50 % de margen.
 > Con `LAG` vemos que **mayo sube un 47 %** por la campaña del café y **diciembre un 71 %**. Con `ROLLUP` tenemos subtotales por región y con `CUBE` vemos que las unidades livianas pierden dinero en el primer y cuarto trimestre.
-> Por último, el **Rol_Analista_BI** lee la vista, pero si intenta ver el Staging recibe el **Msg 229**: solo publica datos conciliados."
+> Por último, la seguridad del DWH. *(Pestaña **Analista BI**, conectada como `login_analista_bi` / `Akil#AnalistaBI2026` → **F5** en `06_Rol_Analista_BI.sql`)* El analista lee la vista BI y el esquema estrella, pero el Staging y la bitácora del ETL le dan **Msg 229**, y si intenta leer la base operativa recibe **Msg 916**, porque ni siquiera tiene usuario allí. **8 de 8 correctas**: solo publica datos conciliados."
 
 **[Diapositiva 14 — Entrega por restauración] (17:00 – 17:20)**
 > "Como pidió el profesor, entregamos **dos respaldos y un solo script**. El script crea lo que no viaja en un .bak: los logins con el mismo SID, la auditoría con el mismo GUID, re-vincula la llave maestra para que el cifrado funcione en otra PC y crea Extended Events y el Job. Lo probamos en una instancia limpia de SQL Server 2022."
@@ -224,7 +255,8 @@
 | ¿Por qué tres bases separadas? | Las cargas analíticas pesadas no deben bloquear la operación (OLTP ≠ DWH), y la base DR prueba la restauración sin tocar producción. |
 | ¿Por qué entregan un .bak y no los scripts? | Así lo pidió el docente: se restaura en < 1 min con `00_Restaurar_Proyecto.sql`. Los scripts 01–06 se entregan como código fuente y son **idempotentes**. |
 | ¿Por qué el .bak de entrega no está cifrado? | Un .bak cifrado solo se restaura donde exista su certificado. Los datos personales igual viajan cifrados con AES_256 y la DMK pide contraseña. El respaldo cifrado se demuestra en el bloque E. |
-| ¿Qué cambia en Windows frente a Linux? | Nada en el T-SQL. Las rutas `C:\AkilFlow\...` se crean con `xp_create_subdir` bajo la cuenta del servicio. Para usar los logins SQL hay que activar el modo de autenticación **mixto**. |
+| ¿Qué cambia en Windows frente a Linux? | Nada en el T-SQL. Las rutas `C:\AkilFlow\...` se crean con `xp_create_subdir` bajo la cuenta del servicio. Para usar los logins SQL hay que activar el modo de autenticación **mixto**: lo hace `00_Preparar_Logins_Modo_Mixto.sql` (requiere un reinicio del servicio). |
+| ¿Cómo entro con un rol si el login dice *Login failed (18456)*? | Falta el modo mixto o el reinicio, o el login quedó bloqueado por contraseñas erróneas. `00_Preparar_Logins_Modo_Mixto.sql` arregla las tres cosas. |
 
 ---
 
@@ -233,8 +265,47 @@
 | Problema | Acción inmediata | Responsable |
 |---|---|---|
 | SSMS se cuelga o la demo da error | "Les mostramos la evidencia capturada" → diapositiva con la captura (anexo) | Expositor de turno |
+| La conexión del rol falla al momento (*Login failed*, certificado) | Ejecutar el mismo archivo desde la pestaña de **administrador**: se convierte solo en el rol (`EXECUTE AS LOGIN`) y da el mismo resultado | Amy / Jhon Gustavo |
+| El resumen de un rol muestra `✘ REVISAR` | Se ejecutó con otro login o sin preparar: verificar la barra inferior y ejecutar `00_Preparar_Logins_Modo_Mixto.sql` | Jhon Gustavo |
 | Se agotan los 3:30 del bloque | Saltar a la frase de transición; el detalle está en el informe | Expositor de turno |
 | Un integrante no se presenta | Rodrigo ↔ Jhon Gustavo y Andre ↔ Amy se cubren mutuamente (ensayar el bloque del compañero) | — |
 | El docente interrumpe con una pregunta | Responder en ≤ 30 s y retomar ("...como decía, ...") | Expositor de turno |
 
 **Ensayos recomendados:** 2 ensayos completos con cronómetro, al menos uno con la vestimenta formal y la laptop real.
+
+---
+
+## 9. Demostración con cada rol (si el docente lo pide, o después de exponer)
+
+Todos los archivos están en `00_ENTREGA_Restaurar/02_Consultas_Por_Fase/`. Antes de empezar: `00_Preparar_Logins_Modo_Mixto.sql`, que debe decir **OK**.
+
+**Ingresar:** *Conectar → Motor de base de datos → **Autenticación de SQL Server*** → login y contraseña → marcar *Certificado de servidor de confianza* → abrir el archivo → **F5**.
+
+| Rol | Inicio de sesión | Contraseña | Archivo | Debe terminar en |
+|---|---|---|---|---|
+| Operador | `login_operador` | `Akil#Operador2026` | `02_Rol_Operador.sql` | 14 de 14 correctas |
+| Supervisor | `login_supervisor` | `Akil#Supervisor2026` | `03_Rol_Supervisor.sql` | 12 de 12 correctas |
+| Auditor | `login_auditor` | `Akil#Auditor2026` | `04_Rol_Auditor.sql` | 9 de 9 correctas |
+| Contador | `login_contador` | `Akil#Contador2026` | `05_Rol_Contador.sql` | 9 de 9 correctas |
+| Analista BI | `login_analista_bi` | `Akil#AnalistaBI2026` | `06_Rol_Analista_BI.sql` | 8 de 8 correctas |
+
+**Qué decir de cada uno (una frase):**
+- **Operador:** "Registra y cambia estados, pero no borra (229), no toca precios (230), no ve personal ni finanzas (229) y no abre la llave (15151)."
+- **Supervisor:** "Lee todo y ve datos descifrados, planifica flota y viajes, pero nunca borra (229) ni altera tablas (1088)."
+- **Auditor:** "Lo lee todo, pero los datos personales solo en binario; no descifra (15151), no ejecuta SP y no escribe (229)."
+- **Contador:** "Ve montos y márgenes; las columnas personales le dan 230 y el personal 229."
+- **Analista BI:** "Vista BI y estrella sí; staging, ETL y escritura no (229); a la base operativa ni entra (916)."
+
+**Prueba a mano (si el docente quiere escribir él mismo),** en *Nueva consulta* con la conexión del rol:
+
+```sql
+SELECT SUSER_NAME() AS login, USER_NAME() AS usuario;            -- ¿quién soy?
+DELETE FROM dbo.encomiendas WHERE encomienda_id = -1;            -- Msg 229 en todos los roles
+UPDATE dbo.encomiendas SET precio_envio = 0 WHERE encomienda_id = -1;  -- operador / supervisor: Msg 230
+SELECT TOP 5 remitente_cif FROM dbo.encomiendas;                 -- contador: Msg 230 · auditor: binario
+EXEC dbo.usp_consultar_encomienda 'AK20261125PEND01';            -- operador / supervisor: descifrado · auditor / contador: Msg 229
+```
+
+**Después:** con la conexión de administrador, `16_Intentos_Denegados.sql` muestra todo lo que se intentó sin permiso, con login, tabla, hora y sentencia.
+
+**Resto de evidencias (conexión de administrador, Ctrl + T, F5):** `01` tablas · `07` matriz de permisos y REVOKE · `08` cifrado · `09` índices · `10` auditoría · `11` Extended Events · `12` backups FULL/DIFF/LOG cifrados con ruta y tamaño · `13` restauración DRP · `14` ETL · `15` OLAP. El detalle está en `MANUAL_DE_USO.md` y en el README de la carpeta.
