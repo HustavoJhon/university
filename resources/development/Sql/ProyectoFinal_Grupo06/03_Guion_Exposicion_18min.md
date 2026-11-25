@@ -12,7 +12,7 @@
 | 2 | **Espinoza Zea, Andre Sebastián** | OLTP 3FN e indexación con plan de ejecución (C2) | 3:30 | 3:30 – 7:00 | 5 – 6 |
 | 3 | **Tumi Huanari, Amy Ariadna** | Seguridad RBAC (4 roles) y cifrado AES_256 (C3) | 3:30 | 7:00 – 10:30 | 7 – 8 |
 | 4 | **Condemayta Alvarez, Jessica Alessandra** | Auditoría, Extended Events y DRP (C4) | 4:00 | 10:30 – 14:30 | 9 – 11 |
-| 5 | **Ccarita Velasquez, Jhon Gustavo** | DWH, ETL, OLAP y cierre (C5) | 3:30 | 14:30 – 18:00 | 12 – 14 |
+| 5 | **Ccarita Velasquez, Jhon Gustavo** | DWH, ETL, OLAP, entrega y cierre (C5) | 3:30 | 14:30 – 18:00 | 12 – 15 |
 
 > El bloque 4 tiene 30 s más porque el Criterio 4 vale 2.5 puntos (el de mayor peso). Margen de seguridad: 2 min antes del tope de 20 min.
 
@@ -22,10 +22,10 @@
 
 **Checklist técnico (lo hace el responsable de la laptop: Jhon Gustavo)**
 - [ ] SQL Server 2022 **Developer** + SSMS abiertos como `sysadmin`.
-- [ ] Ejecutar `01` → `05` completos con **F5** (≈ 1 min). Así toda la demo parte del mismo estado y los resultados coinciden con el informe.
-- [ ] Abrir **5 pestañas** de SSMS, una por script, en orden y con el nombre visible.
+- [ ] Copiar `AkilFlowOperaciones.bak` y `dwh_AkilFlow.bak` a `C:\AkilFlow\Entrega\` y ejecutar `00_Restaurar_Proyecto.sql` con **F5** (< 1 min). **No se ejecutan los scripts 01–05 uno por uno**: el docente pidió restaurar. Así la demo parte del mismo estado que el informe.
+- [ ] Abrir `01_Demo_En_Clase.sql`. Cada integrante ejecuta **su bloque** (seleccionar de un encabezado al siguiente + F5): A Andre · B Amy · C, D y E Jessica · F y G Jhon Gustavo.
 - [ ] Zoom del editor al **150 %** (Ctrl + rueda) y la grilla de resultados a fuente 12 (*Herramientas → Opciones → Fuentes y colores → Grid Results*).
-- [ ] **Ctrl + M** activado en la pestaña del script 01 (plan de ejecución real).
+- [ ] **Ctrl + M** activado antes del bloque A (plan de ejecución real).
 - [ ] Desactivar notificaciones de Windows (Asistente de concentración) y cerrar WhatsApp, correo y Teams.
 - [ ] **Plan B:** carpeta con capturas de pantalla de cada demo, por si SSMS falla.
 - [ ] Cronómetro visible para el siguiente expositor (celular en la mesa): **seña con la mano a los 30 s del final** de cada bloque.
@@ -80,16 +80,14 @@
 **[Diapositiva 5 — Modelo OLTP] (3:30 – 4:45)**
 > "La base transaccional `AkilFlowOperaciones` tiene **7 tablas en tercera forma normal**: empresas, sucursales, usuarios del sistema, **rutas**, vehículos, viajes y encomiendas.
 > Respecto de nuestro avance anterior, **separamos la tabla rutas**. Antes, origen y destino eran texto libre dentro de viajes, y la distancia dependía de la ruta y no del viaje: eso es una **dependencia transitiva**, que viola la 3FN. Ahora `rutas` tiene dos FK hacia sucursales y un `CHECK` que impide que el origen sea igual al destino.
-> En total hay **53 restricciones**: 7 PK, 10 FK, 9 UNIQUE, 16 CHECK y 11 DEFAULT. Cargamos **697 viajes y 6 485 encomiendas** de casi dos años con estacionalidad real: la campaña del café y la Navidad."
+> En total hay **53 restricciones**: 7 PK, 10 FK, 9 UNIQUE, 16 CHECK y 11 DEFAULT. Cargamos **697 viajes y 6 487 encomiendas** de casi dos años con estacionalidad real: la campaña del café y la Navidad."
 
-**🖥️ DEMO SSMS — Script 01 (4:45 – 6:30)**
-1. Ir a la **FASE 7.3** y ejecutarla:
-   > "Si intento registrar una encomienda con peso negativo, el `CHECK` la rechaza con el **Msg 547**."
-2. Ir a la **FASE 4** (con **Ctrl + M** activado), seleccionar el `SELECT` y ejecutarlo:
-   > "Esta es la pantalla de seguimiento del despachador: encomiendas en tránsito desde el 23 de noviembre. Sin índice, el plan muestra un **Clustered Index Scan** y en la pestaña Mensajes vemos **189 lecturas lógicas**: SQL Server lee las 6 485 filas para devolver 15."
-3. **Diapositiva 6** (o la pestaña del plan) y explicar las 3 etapas:
+**🖥️ DEMO SSMS — Bloque A de `01_Demo_En_Clase.sql` (4:45 – 6:30)**
+1. Con **Ctrl + M** activado, ejecutar el bloque A. La primera consulta fuerza el índice clúster (`WITH (INDEX (PK_encomiendas))`), o sea, lo que haría SQL Server **sin** el índice:
+   > "Esta es la pantalla de seguimiento del despachador: encomiendas en tránsito desde el 23 de noviembre. Forzando el índice clúster, el plan muestra un **Clustered Index Scan**: lee toda la tabla para devolver 15 filas (381 lecturas en la base restaurada, porque las filas cifradas son más anchas). La segunda consulta usa nuestro índice: **Index Seek** y **2 lecturas**."
+2. **Diapositiva 6** y explicar las 3 etapas medidas al construir la base:
    > "Con un índice simple sobre `estado, fecha_registro` aparece un **Index Seek + Key Lookup**: encuentra las 15 filas, pero salta 15 veces al índice clúster a buscar el peso y el precio, y baja a **32 lecturas**. Al agregar `INCLUDE` con esas columnas, el índice **cubre** la consulta: solo **Index Seek** y **2 lecturas**. Es una **mejora del 99 %**."
-4. Ejecutar la **FASE 6** para mostrar el plan final en vivo.
+3. Mostrar el inventario de índices (última consulta del bloque A).
 
 **Cierre (6:30 – 7:00)**
 > "Pusimos `estado` primero porque es una igualdad y `fecha` segundo porque es un rango. También creamos un **índice filtrado** solo para encomiendas pendientes. Ahora que los datos son rápidos, hay que protegerlos: **Amy**."
@@ -117,23 +115,21 @@
 > - **Contador**: ve montos y costos, nunca nombres ni teléfonos.
 > Los permisos nunca se dan a personas, siempre a roles. Y usamos `DENY` explícito, que **gana sobre cualquier GRANT**."
 
-**🖥️ DEMO SSMS — Script 02 (8:00 – 9:15)**
-1. Ejecutar en vivo (sin TRY/CATCH, para que salga el error en rojo):
-   ```sql
-   EXECUTE AS USER = 'usr_operador';
-   DELETE FROM dbo.encomiendas WHERE codigo_rastreo = 'AK20261125PEND02';
-   REVERT;
-   ```
+**🖥️ DEMO SSMS — Bloque B de `01_Demo_En_Clase.sql` (8:00 – 9:15)**
+1. B.1–B.3: logins → users → roles, y el operador registra una encomienda por el SP (se cifra sola).
+2. B.4 (el error sale en rojo):
    > "Ahí está el **Msg 229**: *DELETE permission was denied*. El operador no puede borrar evidencia."
-2. Ejecutar la **FASE 7.4** y señalar el **Msg 230**:
+3. B.5 y el **Msg 230**:
    > "Y si intenta bajar el precio de un envío, el error es **a nivel de columna**: solo puede modificar `estado` y `viaje_id`."
-3. Ejecutar la **FASE 7.6** (contador):
+4. B.7 (contador):
    > "El contador ve la vista financiera, pero al pedir `remitente_cif` recibe el **Msg 230**."
 
 **[Diapositiva 8 — Cifrado] (9:15 – 10:15)**
 > "Para los datos personales usamos la **jerarquía completa**: la Service Master Key de la instancia protege la **Database Master Key**, esta protege al **certificado** y el certificado protege la **llave simétrica AES de 256 bits**.
 > Ciframos nombre, DNI o RUC y teléfono de remitentes y destinatarios en columnas `VARBINARY(256)`. Lo más importante: **validamos** dentro de una transacción que todo se descifrara bien, luego **eliminamos las columnas en texto plano** e hicimos un `REBUILD`, porque `DROP COLUMN` deja los bytes en las páginas.
-> *(Ejecutar la FASE 7.5)* El auditor ve `0x000E4F...` y, si intenta descifrar, obtiene `NULL`. Si intenta abrir la llave, recibe el **Msg 15151**. Para registrar, el operador usa un procedimiento `EXECUTE AS OWNER` que cifra dentro del servidor."
+> *(B.6)* El auditor ve `0x000E4F...` y, si intenta descifrar, obtiene `NULL`. Si intenta abrir la llave, recibe el **Msg 15151**. Para registrar, el operador usa un procedimiento `EXECUTE AS OWNER` que cifra dentro del servidor."
+
+> *(B.8)* "Y la diferencia entre **REVOKE y DENY**: hacemos `REVOKE` del `UPDATE(estado)` en viajes y el operador recibe **Msg 229**, porque nadie le concede ya ese permiso. Luego lo volvemos a conceder con `GRANT`."
 
 **Transición (10:15 – 10:30)**
 > "Ya sabemos quién puede hacer qué. Ahora, **¿cómo sabemos lo que realmente hicieron y cómo sobrevivimos a un desastre?** Jessica."
@@ -156,16 +152,16 @@
 **[Diapositiva 9 — SQL Server Audit] (10:30 – 11:30)**
 > "La auditoría tiene dos niveles. En `master`, el **Server Audit** define el destino: archivos `.sqlaudit` en `C:\AkilFlow\Audit`, escritos de forma asíncrona cada segundo. En la base, la **Database Audit Specification** dice qué se audita: `SELECT, INSERT, UPDATE, DELETE` sobre encomiendas y viajes, quién ejecuta el procedimiento que descifra y cualquier cambio de permisos."
 
-**🖥️ DEMO SSMS — Script 03, FASE 2.1 (11:30 – 12:15)**
-> *(Ejecutar la consulta a `sys.fn_get_audit_file`)* "Aquí está la bitácora: el `UPDATE` que asignó la encomienda al viaje, el `DELETE` autorizado y, lo más valioso, este **`DL` con `succeeded = 0` de `usr_operador`**: el intento de borrado que Amy demostró quedó registrado. Eso es **no repudio**. Un trigger no puede capturar ni los SELECT ni los intentos fallidos."
+**🖥️ DEMO SSMS — Bloque C (11:30 – 12:15)**
+> *(Bloque C)* "Vemos la encomienda antes y después del `UPDATE`, el operador intenta borrarla y aquí está la bitácora: el `UPDATE` y, lo más valioso, este **`DL` con `succeeded = 0` de `usr_operador`**: el intento de borrado quedó registrado. Eso es **no repudio**. Un trigger no puede capturar ni los SELECT ni los intentos fallidos."
 
 **[Diapositiva 10 — Extended Events] (12:15 – 12:45)**
-> *(Ejecutar la FASE 3.2)* "Para el monitoreo creamos la sesión `XE_ConsultasLentas_AkilFlow` con el filtro `duration > 2000000`. Está en **microsegundos**, o sea, 2 segundos. El conteo rápido no se registró y el `WAITFOR` de 3 segundos sí, con su duración, usuario y aplicación. El filtro se evalúa antes de escribir, así que el costo es mínimo."
+> *(Bloque D)* "Para el monitoreo creamos la sesión `XE_ConsultasLentas_AkilFlow` con el filtro `duration > 2000000`. Está en **microsegundos**, o sea, 2 segundos. El conteo rápido no se registró y el `WAITFOR` de 3 segundos sí, con su duración, usuario y aplicación. El filtro se evalúa antes de escribir, así que el costo es mínimo."
 
 **[Diapositiva 11 — DRP] (12:45 – 14:15)**
 > "Para el plan de recuperación pusimos la base en **RECOVERY FULL** y creamos un certificado de respaldo en `master`. La cadena es: **FULL** semanal, **DIFFERENTIAL** diario y **LOG cada 15 minutos**, todos cifrados con **AES_256**, con `CHECKSUM` y verificados.
-> *(Mostrar la FASE 4.8, columna `key_algorithm = aes_256`)*
-> Luego simulamos el desastre: restauramos el **FULL y el DIFF con NORECOVERY** (la base queda en *Restoring* esperando más respaldos) y el **LOG con RECOVERY**, que la pone en línea. *(Ejecutar la FASE 6.1 y 6.3)* Producción y contingencia tienen las mismas 6 487 encomiendas, `CHECKDB` sin errores, y desciframos la encomienda DRP001, que se recuperó **gracias al DIFF**, y la DRP002, **gracias al LOG**.
+> *(Bloque E: E.1–E.3 generan los tres respaldos cifrados)*
+> Luego simulamos el desastre: restauramos el **FULL y el DIFF con NORECOVERY** (la base queda en *Restoring* esperando más respaldos) y el **LOG con RECOVERY**, que la pone en línea. *(E.4 y E.5)* La base pasa de *RESTORING* a *ONLINE* y desciframos la encomienda AK-DRP-POSTFULL, que se recuperó **gracias al DIFF**, y la AK-DRP-POSTDIFF, **gracias al LOG**. En el informe está la validación completa: 6 487 filas iguales y `CHECKDB` sin errores.
 > Aplicamos la **regla 3-2-1**: 3 copias, en 2 medios (disco y NAS) y 1 fuera del sitio (Azure o la agencia Chiclayo). **RPO de 15 minutos**: como mucho perdemos ~6 encomiendas, que se re-digitan desde la guía física. **RTO de 60 minutos**: 50 calculados más holgura."
 
 **Transición (14:15 – 14:30)**
@@ -191,15 +187,18 @@
 > "Para el análisis construimos `dwh_AkilFlow` con **tres capas**. Primero, una **zona Staging**, que se vacía y se recarga en cada corrida, donde limpiamos con `LTRIM/RTRIM/UPPER` y **prorrateamos el costo del viaje según el peso** de cada encomienda. Segundo, un **esquema estrella** con 5 dimensiones (tiempo, sucursal, ruta, vehículo y estado) que usan **claves subrogadas** propias del DWH, y una tabla de hechos con métricas aditivas: cantidad, peso, ingreso, costo y margen. Tercero, una **vista** para Power BI.
 > El ETL es un procedimiento con `MERGE`: si la fila existe y cambió la actualiza; si no existe, la inserta. Se programa como **Job del SQL Server Agent a las 2 a. m.**"
 
-**🖥️ DEMO SSMS — Script 04, FASE 7.1 y FASE 8 (15:30 – 16:15)**
-> "La conciliación cuadra al centavo: **6 451 filas y S/ 325 059.90** tanto en Staging como en Fact. Y en la carga incremental, cuando un viaje se completó, el ETL **insertó 0 y actualizó solo 7 filas**: no recarga todo."
+**🖥️ DEMO SSMS — Bloque F (15:30 – 16:15)**
+> "Un viaje en curso llega a destino y corremos el ETL. Las filas que no cumplen las reglas de calidad van a la tabla de cuarentena `etl_errores`. La conciliación cuadra al centavo: **6 451 filas y S/ 325 059.90** tanto en Staging como en Fact. Y en la carga incremental, cuando un viaje se completó, el ETL **insertó 0 y actualizó solo 7 filas**: no recarga todo."
 
-**[Diapositiva 13 — Hallazgos OLAP] (16:15 – 17:15)**
-> *(Ejecutar la Q4 del script 05)* "Con `RANK()` y `SUM() OVER` encontramos una **paradoja**: la ruta **Tarapoto–Chiclayo** factura el 18 % del total, pero tiene **margen negativo**. Las rutas cortas de Bagua Grande y Jaén superan el 50 % de margen.
+**[Diapositiva 13 — Hallazgos OLAP] (16:15 – 17:00)**
+> *(Bloque G)* "Con `RANK()` y `SUM() OVER` encontramos una **paradoja**: la ruta **Tarapoto–Chiclayo** factura el 18 % del total, pero tiene **margen negativo**. Las rutas cortas de Bagua Grande y Jaén superan el 50 % de margen.
 > Con `LAG` vemos que **mayo sube un 47 %** por la campaña del café y **diciembre un 71 %**. Con `ROLLUP` tenemos subtotales por región y con `CUBE` vemos que las unidades livianas pierden dinero en el primer y cuarto trimestre.
 > Por último, el **Rol_Analista_BI** lee la vista, pero si intenta ver el Staging recibe el **Msg 229**: solo publica datos conciliados."
 
-**[Diapositiva 14 — Conclusiones] (17:15 – 18:00)**
+**[Diapositiva 14 — Entrega por restauración] (17:00 – 17:20)**
+> "Como pidió el profesor, entregamos **dos respaldos y un solo script**. El script crea lo que no viaja en un .bak: los logins con el mismo SID, la auditoría con el mismo GUID, re-vincula la llave maestra para que el cifrado funcione en otra PC y crea Extended Events y el Job. Lo probamos en una instancia limpia de SQL Server 2022."
+
+**[Diapositiva 15 — Conclusiones] (17:20 – 18:00)**
 > "En resumen: **rendimiento** (99 % menos lecturas), **seguridad** (4 roles y 0 datos personales en texto plano), **continuidad** (RPO 15 min, RTO 1 h, restauración probada) y **decisiones** (sabemos qué ruta pierde dinero y cuándo reforzar la flota).
 > Recomendamos reajustar la tarifa de Tarapoto–Chiclayo y, como siguiente paso, Always On con una réplica en Chiclayo. **Muchas gracias. Quedamos atentos a sus preguntas.**"
 
@@ -223,7 +222,8 @@
 |---|---|
 | ¿Qué es OLTP frente a OLAP? | **OLTP**: muchas transacciones cortas, normalizado (3FN), optimizado para escribir. **OLAP**: pocas consultas grandes, desnormalizado (estrella), optimizado para leer y agregar. |
 | ¿Por qué tres bases separadas? | Las cargas analíticas pesadas no deben bloquear la operación (OLTP ≠ DWH), y la base DR prueba la restauración sin tocar producción. |
-| ¿Los scripts se pueden volver a ejecutar? | Sí: son **idempotentes** (`IF EXISTS`, `CREATE OR ALTER`, limpieza previa). El 01 reconstruye todo desde cero. |
+| ¿Por qué entregan un .bak y no los scripts? | Así lo pidió el docente: se restaura en < 1 min con `00_Restaurar_Proyecto.sql`. Los scripts 01–06 se entregan como código fuente y son **idempotentes**. |
+| ¿Por qué el .bak de entrega no está cifrado? | Un .bak cifrado solo se restaura donde exista su certificado. Los datos personales igual viajan cifrados con AES_256 y la DMK pide contraseña. El respaldo cifrado se demuestra en el bloque E. |
 | ¿Qué cambia en Windows frente a Linux? | Nada en el T-SQL. Las rutas `C:\AkilFlow\...` se crean con `xp_create_subdir` bajo la cuenta del servicio. Para usar los logins SQL hay que activar el modo de autenticación **mixto**. |
 
 ---

@@ -1,0 +1,148 @@
+/* Informe AkilFlow — estilos de impresión A4 */
+@page {
+  size: A4;
+  margin: 20mm 18mm 20mm 18mm;
+  @bottom-right {
+    content: "Grupo 6 · Base de Datos 2 · pág. " counter(page);
+    font-family: "Noto Sans", "Liberation Sans", sans-serif;
+    font-size: 8pt;
+    color: #6b7785;
+  }
+  @bottom-left {
+    content: "AkilFlow — Transportes Akil S.A.C.";
+    font-family: "Noto Sans", "Liberation Sans", sans-serif;
+    font-size: 8pt;
+    color: #6b7785;
+  }
+}
+@page :first {
+  @bottom-right { content: none; }
+  @bottom-left { content: none; }
+}
+
+:root {
+  --navy: #0B3C5D;
+  --amber: #C98A1B;
+  --ink: #1d2733;
+  --muted: #5b6876;
+  --rule: #d5dde6;
+  --soft: #f3f6f9;
+}
+
+html { font-size: 10pt; }
+body {
+  font-family: "Noto Sans", "Liberation Sans", Arial, sans-serif;
+  color: var(--ink);
+  line-height: 1.5;
+  background: #fff;
+}
+main.content, #quarto-content, .page-columns { max-width: none !important; }
+#quarto-document-content { padding: 0 !important; }
+#title-block-header { display: none; }
+
+p { margin: 0 0 0.55rem; text-align: justify; hyphens: auto; }
+ul, ol { margin: 0 0 0.6rem; padding-left: 1.3rem; }
+li { margin-bottom: 0.2rem; }
+strong { color: #10283c; }
+
+/* ---------- Encabezados ---------- */
+h1 {
+  break-before: page;
+  font-size: 17pt;
+  font-weight: 700;
+  color: var(--navy);
+  border-bottom: 2.5px solid var(--navy);
+  padding-bottom: 4px;
+  margin: 0 0 0.8rem;
+}
+h2 {
+  font-size: 12.5pt;
+  color: var(--navy);
+  margin: 1.1rem 0 0.45rem;
+  break-after: avoid;
+}
+h3 { font-size: 11pt; margin: 0.9rem 0 0.4rem; break-after: avoid; }
+h1, h2, h3 { border-left: none; }
+
+/* ---------- Tablas ---------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.4rem 0 0.9rem;
+  font-size: 8.6pt;
+  line-height: 1.35;
+  break-inside: auto;
+}
+thead th {
+  background: var(--navy);
+  color: #fff;
+  font-weight: 600;
+  text-align: left;
+  padding: 5px 6px;
+  border: 1px solid var(--navy);
+}
+tbody td {
+  padding: 4px 6px;
+  border: 1px solid var(--rule);
+  vertical-align: top;
+}
+tbody tr:nth-child(even) td { background: var(--soft); }
+tr { break-inside: avoid; }
+td code, th code { font-size: 8pt; }
+
+/* ---------- Código ---------- */
+code {
+  font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", "DejaVu Sans Mono", monospace;
+  font-size: 8.6pt;
+  color: #0b3c5d;
+  background: #eef3f8;
+  padding: 0 3px;
+  border-radius: 3px;
+}
+pre, div.sourceCode {
+  background: #f6f8fa !important;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--amber);
+  border-radius: 4px;
+  font-size: 8.4pt;
+  padding: 6px 10px;
+  break-inside: avoid;
+}
+pre code { background: none; padding: 0; color: inherit; }
+
+/* ---------- Diagramas ---------- */
+.cell, .quarto-figure, figure { break-inside: avoid; margin: 0.4rem 0 0.9rem; text-align: center; }
+.cell svg, figure svg, .quarto-figure svg { width: 100% !important; max-width: 100% !important; height: auto !important; max-height: 150mm; }
+figcaption { display: none; }
+
+/* ---------- Portada ---------- */
+.portada {
+  height: 238mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  text-align: center;
+  border-top: 10px solid var(--navy);
+  padding-top: 14mm;
+}
+.portada p { text-align: center; }
+.portada .u { font-size: 20pt; font-weight: 800; letter-spacing: 3px; color: var(--navy); }
+.portada .fac { font-size: 9.5pt; color: var(--muted); margin-bottom: 14mm; }
+.portada .tipo { font-size: 10.5pt; text-transform: uppercase; letter-spacing: 2px; color: var(--amber); font-weight: 700; }
+.portada .titulo { font-size: 44pt; font-weight: 800; color: var(--navy); line-height: 1.1; margin: 2mm 0 2mm; }
+.portada .subtitulo { font-size: 14pt; color: var(--ink); margin-bottom: 4mm; }
+.portada .alcance { font-size: 9.5pt; color: var(--muted); margin: 0 12mm 10mm; }
+.portada table { width: 82%; margin: 0 auto 6mm; font-size: 9pt; }
+.portada table thead { display: none; }
+.portada .lugar { margin-top: auto; font-size: 10pt; color: var(--muted); }
+.portada .lugar p { text-align: center; }
+
+/* ---------- Índice ---------- */
+.indice { break-before: page; }
+.indice h2 { font-size: 17pt; border-bottom: 2.5px solid var(--navy); padding-bottom: 4px; margin-top: 0; }
+.indice ol { font-size: 11pt; line-height: 2; list-style: none; padding-left: 0; }
+.indice li { border-bottom: 1px dotted var(--rule); }
+
+em { color: inherit; }
+a { color: var(--navy); text-decoration: none; }
+hr { display: none; }

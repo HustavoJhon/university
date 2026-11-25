@@ -16,6 +16,7 @@
      FASE 6. Automatización (SQL Server Agent, diario 02:00)
      FASE 7. Primera carga + conciliación Staging vs Fact
      FASE 8. Carga incremental (simulación de un nuevo día de operación)
+     FASE 9. Prueba del manejo de errores (tabla de cuarentena etl_errores)
    ============================================================================= */
 
 /* =============================================================================
@@ -80,12 +81,26 @@ CREATE TABLE dbo.etl_log (
     inicio            DATETIME2(0)  NOT NULL,
     fin               DATETIME2(0)  NULL,
     filas_staging     INT           NULL,
+    filas_rechazadas  INT           NULL,
     hechos_insertados INT           NULL,
     hechos_actualizados INT         NULL,
     dims_insertadas   INT           NULL,
     dims_actualizadas INT           NULL,
     estado            VARCHAR(10)   NOT NULL,
     mensaje           NVARCHAR(4000) NULL
+);
+GO
+
+-- Tabla de errores / cuarentena (Semana 14 - "Manejo de errores en ETL"):
+-- las filas que no superan las reglas de calidad NO llegan a la tabla de
+-- hechos; se redirigen aquí con el motivo para su revisión.
+CREATE TABLE dbo.etl_errores (
+    error_id       INT IDENTITY(1,1) CONSTRAINT PK_etl_errores PRIMARY KEY,
+    ejecucion_id   INT           NOT NULL,
+    encomienda_id  INT           NULL,
+    codigo_rastreo VARCHAR(20)   NULL,
+    regla_fallida  NVARCHAR(200) NOT NULL,
+    fecha          DATETIME2(0)  NOT NULL CONSTRAINT DF_etl_errores_fecha DEFAULT (SYSDATETIME())
 );
 GO
 
@@ -298,10 +313,28 @@ BEGIN
         JOIN AkilFlowOperaciones.dbo.sucursales  so ON so.sucursal_id = r.sucursal_origen_id
         JOIN AkilFlowOperaciones.dbo.sucursales  sd ON sd.sucursal_id = r.sucursal_destino_id
         JOIN AkilFlowOperaciones.dbo.vehiculos   ve ON ve.vehiculo_id = v.vehiculo_id
-        WHERE v.estado IN ('completado', 'en_curso')
-          AND e.peso_kg > 0;                                        -- regla de calidad
+        WHERE v.estado IN ('completado', 'en_curso');
 
         SET @filas_stg = @@ROWCOUNT;
+
+        /* ---------- T : REGLAS DE CALIDAD -> CUARENTENA (etl_errores) ---------- */
+        DELETE s
+        OUTPUT @log_id, deleted.encomienda_id, deleted.codigo_rastreo,
+               CASE WHEN deleted.peso_kg IS NULL OR deleted.peso_kg <= 0        THEN N'Peso nulo o no positivo'
+                    WHEN deleted.precio_envio IS NULL OR deleted.precio_envio < 0 THEN N'Precio nulo o negativo'
+                    WHEN deleted.fecha_salida IS NULL                           THEN N'Viaje sin fecha de salida'
+                    WHEN deleted.costo_asignado IS NULL                         THEN N'No se pudo prorratear el costo'
+                    ELSE N'Placa o ruta vacía' END
+        INTO dbo.etl_errores (ejecucion_id, encomienda_id, codigo_rastreo, regla_fallida)
+        FROM dbo.staging_encomiendas s
+        WHERE s.peso_kg IS NULL OR s.peso_kg <= 0
+           OR s.precio_envio IS NULL OR s.precio_envio < 0
+           OR s.fecha_salida IS NULL
+           OR s.costo_asignado IS NULL
+           OR ISNULL(s.placa, '') = '' OR ISNULL(s.codigo_ruta, '') = '';
+
+        UPDATE dbo.etl_log SET filas_rechazadas = @@ROWCOUNT WHERE ejecucion_id = @log_id;
+        SET @filas_stg = @filas_stg - (SELECT filas_rechazadas FROM dbo.etl_log WHERE ejecucion_id = @log_id);
 
         BEGIN TRAN;
 
@@ -524,9 +557,36 @@ END;
 GO
 EXEC dbo.usp_etl_akilflow;     -- hechos_insertados = 0, hechos_actualizados = n.° de encomiendas del viaje
 GO
-SELECT ejecucion_id, inicio, fin, filas_staging, hechos_insertados, hechos_actualizados,
+SELECT ejecucion_id, inicio, fin, filas_staging, filas_rechazadas, hechos_insertados, hechos_actualizados,
        dims_insertadas, dims_actualizadas, estado
 FROM dbo.etl_log ORDER BY ejecucion_id;
+GO
+
+/* =============================================================================
+   FASE 9. PRUEBA DEL MANEJO DE ERRORES (cuarentena)
+   Se simula un dato corrupto que llega a Staging (precio negativo, como si
+   viniera de un archivo Excel externo). La regla de calidad lo redirige a
+   etl_errores y NO contamina la tabla de hechos.
+   ============================================================================= */
+DECLARE @log_id INT;
+INSERT INTO dbo.etl_log (inicio, estado, mensaje) VALUES (SYSDATETIME(), 'PRUEBA', N'Prueba de cuarentena');
+SET @log_id = SCOPE_IDENTITY();
+
+INSERT INTO dbo.staging_encomiendas (encomienda_id, codigo_rastreo, codigo_viaje, fecha_salida, codigo_ruta,
+                                     placa, estado_encomienda, peso_kg, precio_envio, costo_asignado)
+VALUES (-999, 'AK-EXCEL-ERR01', 'VJ-EXTERNO', '2026-11-25', 'JAE-CIX', 'T3A-845', 'recibida', 12.00, -40.00, 5.00);
+
+DELETE s
+OUTPUT @log_id, deleted.encomienda_id, deleted.codigo_rastreo, N'Precio nulo o negativo'
+INTO dbo.etl_errores (ejecucion_id, encomienda_id, codigo_rastreo, regla_fallida)
+FROM dbo.staging_encomiendas s
+WHERE s.precio_envio < 0;
+
+UPDATE dbo.etl_log SET fin = SYSDATETIME(), filas_rechazadas = @@ROWCOUNT, estado = 'OK' WHERE ejecucion_id = @log_id;
+
+SELECT error_id, ejecucion_id, codigo_rastreo, regla_fallida, fecha FROM dbo.etl_errores;
+SELECT COUNT(*) AS hechos_con_codigo_erroneo
+FROM dbo.fact_encomiendas WHERE codigo_rastreo = 'AK-EXCEL-ERR01';   -- 0: no llegó al DWH
 GO
 
 PRINT N'=== SCRIPT 04 FINALIZADO: dwh_AkilFlow cargado (Staging + Estrella + ETL MERGE). ===';

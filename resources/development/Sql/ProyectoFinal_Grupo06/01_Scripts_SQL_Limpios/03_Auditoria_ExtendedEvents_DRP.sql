@@ -83,7 +83,9 @@ TO FILE (
 )
 WITH (
     QUEUE_DELAY = 1000,          -- escribe a disco cada 1 s (asíncrono, bajo impacto)
-    ON_FAILURE  = CONTINUE       -- si el disco falla, la operación de negocio continúa
+    ON_FAILURE  = CONTINUE,      -- si el disco falla, la operación de negocio continúa
+    AUDIT_GUID  = 'C09D6076-024F-4D02-AAE6-C8837EEF359B'   -- GUID fijo: la especificación de BD
+                                 -- viaja dentro del .bak y se re-enlaza sola al restaurar
 );
 GO
 ALTER SERVER AUDIT Audit_AkilFlow WITH (STATE = ON);
@@ -306,6 +308,26 @@ END TRY
 BEGIN CATCH
     PRINT N'El certificado ya estaba exportado en C:\AkilFlow\Keys\ (se conserva la copia existente).';
 END CATCH;
+GO
+
+-- 4.3b Respaldo de la DMK y del certificado de la BASE (Laboratorio 10, pregunta 3):
+--      sin ellos, las columnas cifradas no se pueden descifrar en otro servidor.
+USE AkilFlowOperaciones;
+GO
+BEGIN TRY
+    BACKUP MASTER KEY TO FILE = N'C:\AkilFlow\Keys\AkilFlowOperaciones_DMK.key'
+        ENCRYPTION BY PASSWORD = N'Akil#DmkExport.2026';
+    BACKUP CERTIFICATE Cert_AkilFlow_Operaciones
+        TO FILE = N'C:\AkilFlow\Keys\Cert_AkilFlow_Operaciones.cer'
+        WITH PRIVATE KEY (FILE = N'C:\AkilFlow\Keys\Cert_AkilFlow_Operaciones.pvk',
+                          ENCRYPTION BY PASSWORD = N'Akil#PvkDatos.2026');
+    PRINT N'DMK y certificado de datos exportados a C:\AkilFlow\Keys\';
+END TRY
+BEGIN CATCH
+    PRINT N'La DMK y el certificado de datos ya estaban exportados (se conserva la copia existente).';
+END CATCH;
+GO
+USE master;
 GO
 
 -- 4.4 Limpieza de registros de simulacro anteriores (permite re-ejecutar el script)

@@ -1,0 +1,650 @@
+---
+title: "AkilFlow — Informe Final del Proyecto Integrador"
+lang: es
+format:
+  html:
+    toc: false
+    embed-resources: true
+    css: informe.css
+    mermaid-format: svg
+    number-sections: false
+    anchor-sections: false
+    code-copy: false
+    highlight-style: github
+mermaid:
+  theme: neutral
+---
+
+::: {.portada}
+::: {.u}
+UNIVERSIDAD CONTINENTAL
+:::
+::: {.fac}
+Facultad de Ingeniería · Escuela Académico Profesional de Ingeniería de Sistemas e Informática
+:::
+
+::: {.tipo}
+Proyecto Final Integrador · Base de Datos 2
+:::
+
+::: {.titulo}
+AkilFlow
+:::
+
+::: {.subtitulo}
+Plataforma de datos segura, resiliente y analítica para **Transportes Akil S.A.C.**
+:::
+
+::: {.alcance}
+OLTP en 3FN e indexación · Seguridad RBAC y cifrado AES_256 · Auditoría, Extended Events y Plan DRP · Data Warehouse, ETL y OLAP — Microsoft SQL Server 2022
+:::
+
+| | |
+|---|---|
+| **Asignatura** | Base de Datos 2 — NRC 39572 |
+| **Docente** | Mg. Oscar Añazco Durand |
+| **Grupo** | N.° 6 |
+| **Entrega** | 2 respaldos `.bak` + script único de restauración + scripts fuente T-SQL |
+
+| N.° | Integrante | Criterio a cargo |
+|:-:|---|---|
+| 1 | Sevillanos Tinco, Rodrigo Antonio | 1 · Perfil empresarial, organigramas y DBA |
+| 2 | Espinoza Zea, Andre Sebastián | 2 · Diseño OLTP e indexación |
+| 3 | Tumi Huanari, Amy Ariadna | 3 · Seguridad RBAC y cifrado |
+| 4 | Condemayta Alvarez, Jessica Alessandra | 4 · Auditoría, monitoreo y DRP |
+| 5 | Ccarita Velasquez, Jhon Gustavo | 5 · Data Warehouse, ETL y OLAP |
+
+::: {.lugar}
+Cusco — Perú · Noviembre de 2026
+:::
+:::
+
+::: {.indice}
+## Índice {.unnumbered .unlisted}
+
+1. Introducción
+2. Marco teórico
+3. Criterio 1 — Perfil empresarial, organigramas y puesto DBA
+4. Criterio 2 — Diseño OLTP e indexación T-SQL
+5. Criterio 3 — Seguridad perimetral RBAC y cifrado AES_256
+6. Criterio 4 — Auditoría, monitoreo y Plan DRP
+7. Criterio 5 — Data Warehouse, ETL y consultas OLAP
+8. Entrega por restauración y demostración en clase
+9. Conclusiones y recomendaciones
+10. Referencias
+11. Anexos — Matriz de cumplimiento de la rúbrica y archivos entregados
+:::
+
+# 1. Introducción
+
+Transportes Akil S.A.C. registra hoy sus encomiendas en hojas de cálculo y cuadernos de agencia. Esto le genera cuatro problemas: no puede rastrear un paquete en tiempo real, los datos personales de sus clientes están a la vista de cualquier empleado, no tiene respaldos confiables y la gerencia no sabe qué rutas le dan o le quitan dinero.
+
+**AkilFlow** resuelve estos problemas con una plataforma de datos en Microsoft SQL Server 2022, organizada en dos bases de datos y una base de contingencia:
+
+| Base de datos | Tipo | Propósito |
+|---|---|---|
+| `AkilFlowOperaciones` | OLTP | Registro transaccional de viajes y encomiendas: 3FN, índices, RBAC, cifrado y auditoría. |
+| `dwh_AkilFlow` | OLAP / DWH | Esquema estrella para analizar la rentabilidad, alimentado por un ETL con `MERGE`. |
+| `AkilFlowOperaciones_DR` | Contingencia | Base que se reconstruye desde los respaldos cifrados en el simulacro de desastre. |
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "wrappingWidth": 400}, "themeVariables": {"fontSize": "17px"}}}%%
+flowchart LR
+    A["Agencias<br/>Jaén · Chiclayo · Bagua Grande<br/>Chachapoyas · Moyobamba · Tarapoto"] -->|App AkilFlow| B[("AkilFlowOperaciones<br/>OLTP 3FN")]
+    B -->|"FULL / DIFF / LOG<br/>cifrados AES_256"| C[("AkilFlowOperaciones_DR<br/>contingencia")]
+    B -->|"ETL diario 02:00<br/>Staging + MERGE"| D[("dwh_AkilFlow<br/>esquema estrella")]
+    D -->|vw_bi_encomiendas| E["Power BI<br/>gerencia"]
+    B -.->|".sqlaudit · .xel"| F["Bitácoras de seguridad<br/>y rendimiento"]
+```
+
+**Objetivo general.** Diseñar e implementar en T-SQL una plataforma de datos para Transportes Akil S.A.C. que asegure la integridad, la confidencialidad, la disponibilidad y el valor analítico de su información operativa.
+
+**Objetivos específicos.**
+
+1. Describir la organización y proponer el puesto de DBA con un decálogo de funciones estratégicas medibles.
+2. Implementar un modelo OLTP en 3FN con índices clúster y no clúster cuyo impacto se mida con el plan de ejecución.
+3. Aplicar seguridad perimetral en dos capas con cuatro roles RBAC y cifrar los datos personales con AES_256.
+4. Configurar SQL Server Audit, Extended Events y un plan DRP con respaldos cifrados y restauración verificada.
+5. Construir un Data Warehouse en esquema estrella con ETL automatizado y consultas OLAP.
+
+**Forma de entrega.** A pedido del docente, el proyecto no se ejecuta script por script en el aula: se entregan **dos respaldos** (`AkilFlowOperaciones.bak` y `dwh_AkilFlow.bak`) y **un solo script** (`00_Restaurar_Proyecto.sql`) que los restaura y reconstruye lo que vive fuera de las bases (logins, auditoría de servidor, Extended Events, certificado de respaldos y Job del ETL). El procedimiento se probó en una instancia **limpia** de SQL Server 2022, distinta de la que generó los respaldos (sección 8).
+
+# 2. Marco teórico
+
+Esta sección resume los conceptos del curso que sustentan cada decisión técnica del proyecto.
+
+**Seguridad de bases de datos y tríada CIA.** La seguridad comprende las actividades y mecanismos que protegen la información contra accesos no autorizados, pérdidas, modificaciones indebidas o destrucción. Persigue tres objetivos: **confidencialidad** (solo los autorizados acceden a los datos), **integridad** (los datos se mantienen correctos y consistentes) y **disponibilidad** (los datos están accesibles cuando se necesitan). Las amenazas más comunes son los accesos no autorizados, el robo de información, el malware, los errores humanos, la inyección SQL, las fallas de hardware y los desastres naturales.
+
+**El DBA.** Es la persona encargada de administrar, controlar, proteger y supervisar la base de datos de la organización: administra usuarios y permisos, garantiza la seguridad e integridad, realiza respaldos y recuperaciones, diseña e implementa bases de datos, monitorea el rendimiento, define políticas y estándares, instala y configura el SGBD y capacita a los usuarios. Trabaja junto con el oficial de seguridad.
+
+**Control de acceso.** En el **DAC** el propietario del recurso asigna los permisos. En el **MAC** los permisos los impone una política central. En el **RBAC** los permisos se asignan a **roles** y los usuarios heredan los de su rol, lo que centraliza la administración y aplica el **mínimo privilegio**. En SQL Server la **autenticación** ("¿quién eres?") la resuelve el `LOGIN` en `master` y la **autorización** ("¿qué puedes hacer?") la resuelve el `USER` de cada base. Los comandos DCL son `GRANT` (otorga), `REVOKE` (retira lo otorgado y vuelve al estado neutro) y `DENY` (prohíbe y prevalece sobre cualquier `GRANT` heredado).
+
+**Cifrado.** Los datos **en tránsito** se protegen con TLS (`Encrypt=True` en la cadena de conexión). Los datos **en reposo** se protegen con TDE (archivos completos), Always Encrypted (desde el cliente) o **cifrado de columnas** con la jerarquía *Service Master Key → Database Master Key → certificado → llave simétrica AES_256*. Este último es el que usa el proyecto. Los **respaldos cifrados** (`BACKUP ... WITH ENCRYPTION`) solo se restauran en un servidor que posea el certificado emisor.
+
+**Auditoría.** SQL Server Audit registra eventos de servidor y de base en archivos binarios `.sqlaudit` con un impacto menor que los *triggers* o el Profiler. Garantiza trazabilidad y **no repudio**, y apoya el cumplimiento de la Ley N.° 29733 de Protección de Datos Personales. Funciona en dos niveles: el *Server Audit* (destino) y la *Audit Specification* (qué se registra).
+
+**Contingencia y recuperación.** Un **esquema de contingencia** es el conjunto de procedimientos, políticas y recursos para prevenir, responder y recuperarse de incidentes. Se apoya en la **gestión de riesgos** (identificar, analizar y controlar amenazas), en **copias de seguridad** completas, diferenciales y del log, en un **DRP** (plan de recuperación ante desastres), en la **replicación** y en **simulacros** que demuestran que el plan funciona. Sus métricas son el **RPO** (cuántos datos se pueden perder) y el **RTO** (cuánto tiempo puede estar detenido el servicio).
+
+**Data Warehouse y BI.** Un sistema **OLTP** está normalizado y optimizado para muchas escrituras pequeñas. Un **Data Warehouse (OLAP)** está desnormalizado y optimizado para lecturas masivas con agregaciones. Según Inmon, un DWH es **orientado al tema, integrado, variable en el tiempo y no volátil**. El modelado dimensional de Kimball organiza los datos en una **tabla de hechos** (métricas aditivas y un **grano** definido) rodeada de **dimensiones** con **claves subrogadas**. El proceso **ETL** (extracción, transformación y carga) alimenta el DWH a través de una **zona de staging**, aplica reglas de calidad y redirige los errores a una tabla de registro. Las operaciones OLAP típicas son **roll-up, drill-down, slice, dice** y las matrices **CUBE**.
+
+# 3. Criterio 1 — Perfil empresarial, organigramas y puesto DBA
+
+## 3.1 Perfil corporativo
+
+| Campo | Detalle |
+|---|---|
+| **Razón social** | Transportes Akil S.A.C. — RUC 20601234567 (dato de laboratorio) |
+| **Sede central** | Av. Mesones Muro 1250, Jaén, Cajamarca |
+| **Giro** | Transporte terrestre de carga y encomiendas (CIIU 4923): encomienda puerta a puerta, carga consolidada, documentos y valores declarados. |
+| **Cobertura** | Corredor norte y nororiente: **Jaén** (Cajamarca), **Chiclayo** (Lambayeque), **Bagua Grande** y **Chachapoyas** (Amazonas), **Moyobamba** y **Tarapoto** (San Martín). |
+| **Red de rutas** | 10 rutas troncales, de 75 km (Jaén–Bagua Grande) a 680 km (Chiclayo–Tarapoto). |
+| **Flota** | 8 unidades: 3 pesadas (Volvo FH 460, Scania R450, Mercedes-Benz Actros), 3 medianas (Hino 500, VW Constellation, Foton Auman) y 2 livianas (Isuzu FVR, JAC N-Series). Capacidad total: 58.5 t. |
+| **Personal en el sistema** | 14 usuarios: gerencia, operaciones, contabilidad, DBA, 4 conductores y 6 despachadores (uno por agencia). |
+| **Clientes clave** | Cooperativas cafetaleras y cacaoteras, ferreterías, boticas, distribuidoras y personas naturales. |
+| **Estacionalidad** | **Campaña cafetalera (mayo–agosto)**: +40 % de encomiendas. **Campaña navideña (diciembre)**: hasta +70 % en ingresos. |
+| **Volumen 2025** | 3 264 encomiendas, ≈ 255 t de carga e ingresos de S/ 164 150 (calculado en el DWH). |
+
+**Misión.** Conectar a productores y comercios del nororiente peruano con los mercados de la costa mediante un servicio de carga y encomiendas puntual, trazable y seguro.
+
+**Visión al 2030.** Ser el operador logístico de referencia del corredor Chiclayo–Jaén–Tarapoto, con rastreo en línea y decisiones basadas en datos.
+
+**Problemática actual y respuesta de AkilFlow**
+
+| # | Problema | Impacto | Solución (criterio) |
+|:-:|---|---|---|
+| P1 | Registro en Excel y cuadernos, con datos duplicados | No hay una sola versión de la verdad | OLTP 3FN con PK/FK/CHECK (2) |
+| P2 | El cliente llama varias veces para saber dónde está su envío | Consultas lentas, mala experiencia | Índices *covering* por estado y fecha (2) |
+| P3 | Nombres, DNI y teléfonos visibles para cualquier empleado | Riesgo de sanción (Ley N.° 29733) | RBAC con 4 roles y AES_256 (3) |
+| P4 | Si se pierde un paquete no se sabe quién tocó el registro | No hay no repudio | SQL Server Audit (4) |
+| P5 | No hay respaldos | Una falla de disco borra el negocio | DRP con FULL/DIFF/LOG cifrados y regla 3-2-1 (4) |
+| P6 | No se sabe qué rutas pierden dinero | Precios decididos "a ojo" | DWH + OLAP + Power BI (5) |
+
+## 3.2 Organigrama general
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "wrappingWidth": 400}, "themeVariables": {"fontSize": "17px"}}}%%
+flowchart LR
+    JG["Junta General de Accionistas"] --> GG["Gerencia General"]
+    GG --- AL["Asesoría Legal (staff)"]
+    GG --- SST["Seguridad y Salud en el Trabajo (staff)"]
+    GG --> GO["Gerencia de Operaciones"]
+    GG --> GAF["Gerencia de Administración y Finanzas"]
+    GG --> GC["Gerencia Comercial"]
+    GG --> TI["Área de Tecnologías de la Información"]
+    GO --> JF["Jefatura de Flota y Mantenimiento"]
+    GO --> JA["Jefatura de Agencias"]
+    GO --> JD["Jefatura de Despacho y Rutas"]
+    JF --> CON["Conductores (4)"]
+    JA --> AG["6 agencias"]
+    AG --> DES["Despachadores (6)"]
+    GAF --> CONT["Contabilidad y Tesorería"]
+    GAF --> RRHH["Recursos Humanos"]
+    GC --> VC["Ventas corporativas"]
+    GC --> AC["Atención al cliente"]
+    style TI fill:#0B3C5D,color:#fff
+```
+
+## 3.3 Organigrama del Área de TI
+
+El Área de TI depende de la Gerencia General porque sus sistemas sirven a todas las gerencias. El **DBA es un puesto nuevo que proponemos**; reporta a la Jefatura de TI.
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "wrappingWidth": 400}, "themeVariables": {"fontSize": "17px"}}}%%
+flowchart TB
+    GG["Gerencia General"] --> JTI["Jefatura de TI"]
+    JTI --> DBA["Administrador de Base de Datos (DBA)<br/>PUESTO PROPUESTO"]
+    JTI --> DEV["Desarrollo de Software<br/>App AkilFlow · API de rastreo"]
+    JTI --> INF["Infraestructura y Redes<br/>servidores · VPN · GPS"]
+    JTI --> SOP["Mesa de Ayuda"]
+    JTI --> SEG["Oficial de Seguridad de la Información"]
+    DBA --> BI["Analista de BI<br/>Power BI · DWH"]
+    DBA -.coordina.-> SEG
+    DBA -.coordina.-> INF
+    style DBA fill:#C0392B,color:#fff
+```
+
+| Campo | Ficha del puesto propuesto |
+|---|---|
+| **Denominación** | Administrador de Base de Datos (DBA) — SQL Server |
+| **Reporta a / supervisa a** | Jefe de TI / Analista de BI |
+| **Coordina con** | Oficial de Seguridad (auditoría y cifrado), Infraestructura (almacenamiento y copias externas), Desarrollo (consultas y despliegues) |
+| **Perfil** | Bachiller en Ingeniería de Sistemas; deseable certificación *Azure Database Administrator Associate (DP-300)*; 2 años administrando SQL Server. |
+| **Objetivo** | Que los datos de AkilFlow estén **disponibles** (RTO ≤ 60 min), **íntegros**, **confidenciales** y **útiles** para decidir. |
+
+## 3.4 Decálogo del DBA de Transportes Akil
+
+| N.° | Función estratégica | Aplicación en Transportes Akil | Evidencia en el proyecto | KPI |
+|:-:|---|---|---|---|
+| 1 | **Diseño y gobierno del modelo de datos** | Mantener la OLTP en 3FN y aprobar todo cambio de esquema. | 7 tablas, 53 restricciones. | 0 anomalías de actualización |
+| 2 | **Optimización del rendimiento** | "¿Dónde está mi encomienda?" en < 1 s, aun en campaña. | *Covering index*: 189 → 2 lecturas. | P95 < 1 s |
+| 3 | **Seguridad y control de acceso (RBAC)** | Cada puesto recibe solo lo que necesita. | 2 capas, 4 roles, `GRANT`/`DENY`/`REVOKE`. | 0 permisos directos a usuarios |
+| 4 | **Protección de datos personales** | Cifrar nombre, DNI/RUC y teléfono (Ley N.° 29733). | DMK → certificado → AES_256; texto plano eliminado. | 100 % de PII cifrada |
+| 5 | **Auditoría y trazabilidad** | Saber quién vio, cambió o intentó borrar una encomienda. | Server + Database Audit. | 100 % de DML crítico auditado |
+| 6 | **Monitoreo proactivo** | Detectar lentitud antes de que la agencia reclame. | Extended Events > 2 s. | Detección < 24 h |
+| 7 | **Respaldo y recuperación (DRP)** | Que un fallo o un *ransomware* no borre el historial. | FULL/DIFF/LOG cifrados, 3-2-1, simulacro. | RPO 15 min · RTO 60 min |
+| 8 | **Integridad física y continuidad** | Detectar corrupción de páginas y falta de espacio. | `CHECKSUM`, `VERIFYONLY`, `DBCC CHECKDB`. | 0 errores de CHECKDB |
+| 9 | **Inteligencia de negocios** | Rentabilidad por ruta, agencia, vehículo y temporada. | DWH estrella, ETL `MERGE`, OLAP. | Conciliación Staging = Fact |
+| 10 | **Automatización y documentación** | Programar tareas y mantener *runbooks* de recuperación. | Job del ETL, scripts idempotentes, script de restauración. | 100 % de tareas críticas automatizadas |
+
+# 4. Criterio 2 — Diseño OLTP e indexación T-SQL
+
+## 4.1 Modelo entidad-relación (3FN)
+
+```{mermaid}
+erDiagram
+    direction LR
+    empresas ||--o{ sucursales : tiene
+    empresas ||--o{ vehiculos : posee
+    sucursales ||--o{ usuarios_sistema : emplea
+    sucursales ||--o{ rutas : "origen / destino"
+    rutas ||--o{ viajes : "se recorre en"
+    vehiculos ||--o{ viajes : realiza
+    usuarios_sistema ||--o{ viajes : conduce
+    viajes ||--o{ encomiendas : transporta
+    usuarios_sistema ||--o{ encomiendas : registra
+    rutas { int ruta_id PK
+            char codigo_ruta UK
+            int sucursal_origen_id FK
+            int sucursal_destino_id FK
+            decimal distancia_km
+            decimal tarifa_kg }
+    viajes { int viaje_id PK
+             int ruta_id FK
+             int vehiculo_id FK
+             int conductor_id FK
+             decimal costo_estimado
+             varchar estado }
+    encomiendas { int encomienda_id PK
+                  varchar codigo_rastreo UK
+                  int viaje_id FK
+                  varbinary remitente_cif
+                  varbinary destinatario_cif
+                  decimal peso_kg
+                  decimal precio_envio }
+```
+
+| Forma normal | Cómo se cumple |
+|---|---|
+| **1FN** | Atributos atómicos; cada encomienda es una fila con su `codigo_rastreo`, sin listas dentro de un viaje. |
+| **2FN** | Todas las PK son simples (`INT IDENTITY`), así que no hay dependencias parciales. |
+| **3FN** | Sin dependencias transitivas: distancia, horas y tarifa dependen de la **ruta** (por eso existe la tabla `rutas`); `usuarios_sistema` no repite `empresa_id` (se obtiene vía sucursal); la ciudad pertenece a la **sucursal**. |
+
+**Restricciones (verificadas en el catálogo):** 7 `PRIMARY KEY CLUSTERED`, 10 `FOREIGN KEY`, 9 `UNIQUE`, 16 `CHECK` y 11 `DEFAULT`, es decir, **53**. Algunos ejemplos: `CK_rutas_distinto` (origen ≠ destino), `CK_viajes_fechas` (llegada > salida), `CK_encomiendas_peso` (0 < peso ≤ 5000) y `CK_empresas_ruc` (11 dígitos). La prueba del script 01 demuestra que el `CHECK` rechaza un peso negativo con **Msg 547**.
+
+**Volumen de datos.** Los datos se generan de forma determinística, así todos los integrantes obtienen las mismas cifras: **697 viajes** (01/01/2025 – 28/11/2026, 4 % cancelados) y **6 487 encomiendas**, con la estacionalidad real (café y Navidad) y un crecimiento en 2026.
+
+## 4.2 Estrategia de indexación
+
+| Índice | Tipo | Clave · `INCLUDE` / filtro | Consulta que acelera |
+|---|---|---|---|
+| `PK_*` (7) | **Clúster** | `*_id INT IDENTITY` | Acceso por PK y JOIN. La clave es estrecha, única, estática y creciente: no provoca *page splits*. |
+| `IX_encomiendas_estado_fecha` | No clúster **covering** | `estado, fecha_registro` · `INCLUDE (codigo_rastreo, peso_kg, precio_envio)` | Seguimiento de encomiendas en tránsito |
+| `IX_encomiendas_viaje` | No clúster (FK) | `viaje_id` · `INCLUDE (peso_kg, precio_envio, estado)` | Manifiesto de carga y extracción del ETL |
+| `IX_encomiendas_pendientes` | No clúster **filtrado** | `usuario_registro_id, fecha_registro` · `WHERE estado = 'recibida'` | Bandeja de pendientes por agencia (solo 35 filas indexadas) |
+| `IX_viajes_fecha_salida` | No clúster | `fecha_salida` · `INCLUDE (...)` | Reportes por rango de fechas |
+| `IX_viajes_vehiculo_fecha` | No clúster compuesto | `vehiculo_id, fecha_salida` | Agenda de cada unidad |
+| `IX_viajes_ruta` | No clúster (FK) | `ruta_id` | JOIN con `rutas` |
+
+## 4.3 Impacto en el plan de ejecución (medido)
+
+Consulta de negocio: *"¿qué encomiendas siguen en tránsito desde el 23/11/2026?"* (15 filas de 6 487).
+
+```sql
+SELECT codigo_rastreo, fecha_registro, peso_kg, precio_envio, estado
+FROM dbo.encomiendas
+WHERE estado = 'en_transito' AND fecha_registro >= '2026-11-23';
+```
+
+| Etapa | Índice disponible | Operador del plan | Lecturas lógicas |
+|---|---|---|:-:|
+| **ANTES** | solo `PK_encomiendas` | Clustered Index Scan (lee toda la tabla) | **189** |
+| **INTERMEDIO** | `IX (estado, fecha_registro)` | Index Seek + Key Lookup (15 saltos al clúster) | **32** (−83 %) |
+| **DESPUÉS** | mismo índice con `INCLUDE` | Index Seek *covering*, sin Key Lookup | **2** (**−99 %**) |
+
+En la base restaurada, donde las filas son más anchas por las columnas cifradas, la misma comparación (bloque A de la demo, forzando el índice clúster con `WITH (INDEX (PK_encomiendas))`) da **381 → 2** lecturas lógicas.
+
+**Análisis.** `estado` va primero porque es un predicado de igualdad, y `fecha_registro` va segundo porque es un rango: el *Seek* se posiciona y lee un tramo contiguo del árbol B+. El *Key Lookup* cuesta una lectura aleatoria por fila; el `INCLUDE` lo elimina **sin ensanchar la clave**, porque las columnas incluidas solo viven en el nivel hoja. El costo es mantener el índice en cada escritura, aceptable en una OLTP con unas 20 consultas de rastreo por cada encomienda registrada.
+
+# 5. Criterio 3 — Seguridad perimetral RBAC y cifrado AES_256
+
+## 5.1 Modelo perimetral en dos capas
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "wrappingWidth": 400}, "themeVariables": {"fontSize": "17px"}}}%%
+flowchart LR
+    subgraph C1["CAPA 1 · instancia (master) · AUTENTICACIÓN"]
+        L1[login_operador]
+        L2[login_supervisor]
+        L3[login_auditor]
+        L4[login_contador]
+    end
+    subgraph C2["CAPA 2 · AkilFlowOperaciones · AUTORIZACIÓN"]
+        U1[usr_operador] --> R1[Rol_Operador]
+        U2[usr_supervisor] --> R2[Rol_Supervisor]
+        U3[usr_auditor] --> R3[Rol_Auditor]
+        U4[usr_contador] --> R4[Rol_Contador]
+    end
+    L1 -->|SID| U1
+    L2 -->|SID| U2
+    L3 -->|SID| U3
+    L4 -->|SID| U4
+```
+
+- **Capa 1 — `LOGIN`** (`CHECK_POLICY = ON`): autentica a nivel de instancia. Se crea con un **SID fijo**, así el mismo login creado en el aula queda enlazado a su `USER` sin dejar usuarios huérfanos.
+- **Capa 2 — `USER`**: autoriza dentro de la base. Un login sin user no puede entrar.
+- Los permisos se asignan **solo a roles**. Dar de baja a un empleado es solo `ALTER ROLE ... DROP MEMBER`.
+
+## 5.2 Matriz RBAC (mínimo privilegio)
+
+| Objeto / acción | Operador (despachador) | Supervisor (jefe de operaciones) | Auditor (control interno) | Contador (finanzas) |
+|---|:-:|:-:|:-:|:-:|
+| `SELECT` maestros y viajes | ✅ | ✅ | ✅ | ✅ |
+| `SELECT` columnas cifradas `*_cif` | binario | binario | binario | ⛔ DENY columna |
+| `SELECT` `usuarios_sistema` | ⛔ DENY | ✅ | ✅ | ⛔ DENY |
+| `INSERT` directo en encomiendas | ⛔ DENY (usa el SP) | — | ⛔ DENY | ⛔ DENY |
+| `UPDATE` encomiendas | solo `estado, viaje_id` | solo `estado, viaje_id` | ⛔ DENY | ⛔ DENY |
+| `DELETE` en cualquier tabla | ⛔ DENY | ⛔ DENY | ⛔ DENY | ⛔ DENY |
+| `ALTER` (DDL) | — | ⛔ DENY | — | — |
+| `EXECUTE` SP que cifra / descifra | ✅ | ✅ | ⛔ DENY | ⛔ DENY |
+| Vista financiera | ⛔ DENY | ✅ | ✅ | ✅ |
+
+La granularidad cubre **esquema** (`ON SCHEMA::dbo`), **objeto**, **columna** (`GRANT UPDATE (estado, viaje_id)`, `DENY SELECT (remitente_cif, ...)`) y **módulo** (`EXECUTE`).
+
+## 5.3 Jerarquía de cifrado y migración sin texto plano
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "wrappingWidth": 400}, "themeVariables": {"fontSize": "17px"}}}%%
+flowchart LR
+    SMK["Service Master Key<br/>(instancia)"] --> DMK["Database Master Key<br/>contraseña + SMK"] --> CERT["Certificado<br/>Cert_AkilFlow_Operaciones"] --> SK["Symmetric Key<br/>SymKey_AkilFlow_Datos<br/>AES_256"]
+    SK --> COL["remitente · documento<br/>destinatario · teléfono<br/>VARBINARY(256)"]
+```
+
+| Paso | Sentencia clave | Resultado |
+|:-:|---|---|
+| 1 | `ALTER TABLE ... ADD remitente_cif VARBINARY(256)` (×4) | Columnas binarias destino |
+| 2 | `OPEN SYMMETRIC KEY` + `UPDATE ... EncryptByKey(Key_GUID(...), remitente)` dentro de una transacción | Datos cifrados |
+| 3 | Validación *round-trip*: `DecryptByKey(x) <> original` | 0 inconsistencias → `COMMIT` |
+| 4 | `DROP COLUMN remitente, documento_remitente, destinatario, telefono_destinatario` | Sin columnas en texto plano |
+| 5 | `ALTER INDEX ALL ... REBUILD` | Purga los bytes residuales de las columnas eliminadas |
+
+Las nuevas encomiendas solo entran por `dbo.usp_registrar_encomienda` (`WITH EXECUTE AS OWNER`), que cifra dentro del servidor. El usuario nunca recibe permisos sobre el certificado ni la llave.
+
+## 5.4 Pruebas de seguridad (resultados obtenidos en SQL Server 2022)
+
+| Usuario | Acción | Resultado |
+|---|---|---|
+| `usr_operador` | Registrar y consultar con los SP | ✅ Registra cifrado y consulta descifrado |
+| `usr_operador` | `DELETE FROM encomiendas` | ⛔ **Msg 229** — *The DELETE permission was denied* |
+| `usr_operador` | `INSERT` directo (saltándose el cifrado) | ⛔ **Msg 229** |
+| `usr_operador` | `UPDATE ... SET precio_envio = 0` | ⛔ **Msg 230** — *denied on the column 'precio_envio'* |
+| `usr_auditor` | `DecryptByKey(remitente_cif)` / `OPEN SYMMETRIC KEY` | Devuelve `NULL` / ⛔ **Msg 15151** |
+| `usr_auditor` | `UPDATE` o `EXEC usp_consultar_encomienda` | ⛔ **Msg 229** |
+| `usr_contador` | Vista financiera / `SELECT remitente_cif` | ✅ / ⛔ **Msg 230** |
+| `usr_supervisor` | `UPDATE vehiculos` / `DELETE viajes` | ✅ / ⛔ **Msg 229** |
+| `usr_operador` | `UPDATE viajes(estado)` después de `REVOKE` | ⛔ **Msg 229**; tras un nuevo `GRANT` → ✅ |
+
+**REVOKE frente a DENY (Laboratorio 9).** `REVOKE UPDATE (estado) ON dbo.viajes FROM Rol_Operador` retira el permiso concedido y deja al rol en estado neutro: el operador queda bloqueado porque ya nadie le concede ese permiso. Un `DENY`, en cambio, lo bloquearía aunque otro rol se lo concediera. El script restituye el permiso con un nuevo `GRANT` para no alterar la matriz.
+
+**¿Por qué cifrado de columnas y no otra alternativa?** TDE protege los archivos, pero cualquier usuario con `SELECT` ve el texto plano. Always Encrypted exige cambiar el driver de la aplicación. `EncryptByKey`, combinado con RBAC, permite que el auditor audite **sin ver** los datos personales.
+
+# 6. Criterio 4 — Auditoría, monitoreo y Plan DRP
+
+## 6.1 Evaluación de riesgos (base del plan de contingencia)
+
+| Riesgo | Probabilidad | Impacto | Control implementado |
+|---|:-:|:-:|---|
+| Acceso indebido a datos personales | Media | Alto | RBAC + AES_256 + auditoría de `SELECT` y `EXECUTE` |
+| Borrado o alteración maliciosa | Media | Alto | `DENY DELETE`, SQL Server Audit con intentos fallidos |
+| Consultas lentas en campaña | Alta | Medio | Índices + Extended Events > 2 s |
+| Falla de disco o corrupción | Media | Muy alto | `RECOVERY FULL`, FULL/DIFF/LOG con `CHECKSUM` |
+| *Ransomware* o incendio en la sede | Baja | Muy alto | Regla 3-2-1, copia externa inmutable, respaldos cifrados |
+| Pérdida del certificado de respaldo | Baja | Muy alto | Exportación de certificados y DMK a `C:\AkilFlow\Keys` y custodia separada |
+
+## 6.2 SQL Server Audit
+
+| Nivel | Objeto | Qué registra |
+|---|---|---|
+| Servidor | `Audit_AkilFlow` → `C:\AkilFlow\Audit\*.sqlaudit` (50 MB × 10, `QUEUE_DELAY = 1000`, `ON_FAILURE = CONTINUE`) | Destino de la bitácora |
+| Servidor | `SAS_AkilFlow_Seguridad` | Inicios de sesión fallidos, cambios de logins y de roles de servidor |
+| Base | `DB_Audit_AkilFlow` | `SELECT/INSERT/UPDATE/DELETE` en `encomiendas`; `SELECT/UPDATE/DELETE` en `viajes`; `EXECUTE` del SP que descifra; cambios de roles y permisos |
+
+**Prueba antes y después.** La encomienda `AK20261125PEND01` pasa de `viaje_id = NULL, recibida` a `en_transito`. La encomienda de prueba `AK20261125DEMO01` se elimina. El operador intenta borrar y falla. Extracto real de `sys.fn_get_audit_file`:
+
+| action_id | succeeded | usuario_bd | objeto | sentencia |
+|:-:|:-:|---|---|---|
+| `SL` | 1 | usr_auditor | viajes | `SELECT TOP (3) codigo_viaje, estado ...` |
+| **`DL`** | **0** | **usr_operador** | encomiendas | `DELETE ... WHERE codigo_rastreo = 'AK20261125PEND02'` |
+| `SL` | 1 | usr_operador | encomiendas | `SELECT COUNT(*) ... estado = 'en_transito'` |
+| `DL` | 1 | dbo | encomiendas | `DELETE ... 'AK20261125DEMO01'` |
+| `UP` | 1 | dbo | encomiendas | `UPDATE ... SET viaje_id = @viaje_en_curso ...` |
+
+La fila con `succeeded = 0` es la **prueba de no repudio**: el intento quedó registrado con fecha, usuario y sentencia, aunque el motor lo bloqueó.
+
+## 6.3 Extended Events — consultas de más de 2 segundos
+
+`XE_ConsultasLentas_AkilFlow` captura `sql_statement_completed` y `rpc_completed` con el predicado `[duration] > 2000000` (la duración se mide en **microsegundos**). El predicado se evalúa **antes** de enviar el evento al archivo `.xel`, por eso las consultas rápidas no cuestan nada. La sesión arranca sola con el servicio (`STARTUP_STATE = ON`).
+
+| Sentencia de prueba | Duración | ¿Capturada? |
+|---|:-:|:-:|
+| `SELECT COUNT(*) FROM dbo.viajes` | milisegundos | No |
+| `WAITFOR DELAY '00:00:03'` | 3.00 s | **Sí** (usuario, aplicación, texto y lecturas) |
+| Reporte de ranking de rutas + espera de 3 s | 3.0 s | **Sí** |
+
+## 6.4 Respaldos cifrados y restauración secuencial
+
+| Tipo | Frecuencia en producción | Tamaño medido | Cifrado | Opciones |
+|---|---|:-:|---|---|
+| **FULL** | Domingo 00:00 | 2.93 MB (1 386 páginas) | `AES_256` · `CertBackupServer_AkilFlow` | `CHECKSUM`, `COMPRESSION` |
+| **DIFFERENTIAL** | Diario 23:00 | 0.17 MB (154 páginas) | `AES_256` | ídem |
+| **LOG** | Cada 15 min | 0.05 MB (11 páginas) | `AES_256` | ídem |
+
+La base está en **`RECOVERY FULL`** desde su creación. La cadena se valida en `msdb.dbo.backupset`: el `database_backup_lsn` del DIFF y del LOG coincide con el `first_lsn` del FULL. Además se exportan a `C:\AkilFlow\Keys\` el **certificado de respaldos**, la **DMK** y el **certificado de datos** (`BACKUP MASTER KEY` / `BACKUP CERTIFICATE ... WITH PRIVATE KEY`). Sin esos archivos, ni los respaldos cifrados ni las columnas cifradas se pueden recuperar en otro servidor (Laboratorio 10).
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "wrappingWidth": 400}, "themeVariables": {"fontSize": "17px"}}}%%
+flowchart LR
+    F["RESTORE FULL<br/>WITH MOVE, NORECOVERY"] --> R1(["RESTORING<br/>sin rollback"])
+    R1 --> D["RESTORE DIFF<br/>WITH NORECOVERY"] --> R2(["RESTORING"])
+    R2 --> L["RESTORE LOG<br/>WITH RECOVERY"] --> ON(["ONLINE<br/>redo + undo"])
+    ON --> V["DBCC CHECKDB<br/>conteos · descifrado"]
+    style ON fill:#2E8B57,color:#fff
+```
+
+| Validación post-desastre | Producción | Contingencia | Resultado |
+|---|:-:|:-:|:-:|
+| Filas en `encomiendas` / `viajes` | 6 487 / 697 | 6 487 / 697 | ✅ |
+| `DBCC CHECKDB` | — | 0 errores | ✅ |
+| `AK20261125DRP001` (registrada después del FULL) | ✓ | Recuperada por el DIFF | ✅ |
+| `AK20261125DRP002` y `PEND04 = devuelta` (después del DIFF) | ✓ | Recuperadas por el LOG | ✅ |
+| Descifrado de remitente y destinatario | ✓ | ✓ (DMK re-vinculada a la SMK) | ✅ |
+
+`NORECOVERY` deja la base en *Restoring* sin deshacer transacciones, porque el siguiente respaldo puede completarlas. Solo el último eslabón usa `RECOVERY`.
+
+## 6.5 Regla 3-2-1, RPO y RTO
+
+| Componente | Implementación en Transportes Akil |
+|---|---|
+| **3 copias** | Datos vivos en el servidor de Jaén + respaldo local en `C:\AkilFlow\Backups` + copia externa |
+| **2 medios** | Disco del servidor + NAS de la sede (copia programada) |
+| **1 fuera del sitio** | Azure Blob Storage con `BACKUP TO URL` (plantilla en el script 03), con inmutabilidad (3-2-1-1-0) |
+| **Llaves** | `.cer`, `.pvk` y `.key` custodiados en una bóveda distinta de la de los `.bak` |
+
+**RPO = 15 minutos.** En campaña se registran unas 25 encomiendas por hora en la red. Con respaldos de LOG cada 15 minutos, la pérdida máxima es de ≈ 6 encomiendas, que se vuelven a digitar desde la guía física. Con solo un DIFF diario se perderían hasta ≈ 600.
+
+**RTO = 60 minutos.** Peor caso con una base proyectada de 5 GB:
+
+| Actividad | Tiempo |
+|---|:-:|
+| Detección y decisión de activar el DRP | 10 min |
+| Restaurar FULL (5 GB a ≈ 150 MB/s, más descifrado) + DIFF | 4 min |
+| Restaurar 96 respaldos de LOG | 8 min |
+| `RECOVERY` + `DBCC CHECKDB` | 10 min |
+| Re-vincular la DMK, validar descifrado y conteos | 5 min |
+| Redirigir la aplicación y hacer pruebas en las agencias | 13 min |
+| **Total (+ 10 min de holgura = 60 min)** | **≈ 50 min** |
+
+# 7. Criterio 5 — Data Warehouse, ETL y consultas OLAP
+
+## 7.1 Arquitectura de tres capas y esquema estrella
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "wrappingWidth": 400}, "themeVariables": {"fontSize": "17px"}}}%%
+flowchart LR
+    O[("AkilFlowOperaciones<br/>OLTP")] -->|"E: SELECT entre bases<br/>viajes completados / en curso"| ST["staging_encomiendas<br/>limpieza + prorrateo"]
+    ST -->|"reglas de calidad"| ER["etl_errores<br/>cuarentena"]
+    ST -->|"MERGE SCD1"| DIM["5 dimensiones<br/>con claves subrogadas"]
+    ST -->|"MERGE incremental"| F["fact_encomiendas"]
+    DIM --- F
+    F --> VW["vw_bi_encomiendas"] --> PBI["Power BI<br/>Rol_Analista_BI"]
+```
+
+```{mermaid}
+erDiagram
+    direction LR
+    dim_tiempo ||--o{ fact_encomiendas : tiempo_id
+    dim_sucursal ||--o{ fact_encomiendas : sucursal_sk
+    dim_ruta ||--o{ fact_encomiendas : ruta_sk
+    dim_vehiculo ||--o{ fact_encomiendas : vehiculo_sk
+    dim_estado_encomienda ||--o{ fact_encomiendas : estado_sk
+    fact_encomiendas { bigint fact_id PK
+                       int encomienda_id_oltp UK
+                       varchar codigo_rastreo
+                       int cantidad_encomiendas
+                       decimal peso_kg
+                       decimal ingreso_envio
+                       decimal costo_asignado
+                       decimal margen }
+```
+
+**Grano:** una fila = una encomienda transportada. **Dimensiones:** `dim_tiempo` (clave `AAAAMMDD`, 2024–2027, con temporada cafetalera o navideña), `dim_sucursal` (con región), `dim_ruta` (tipo Corta/Media/Larga), `dim_vehiculo` (categoría Liviano/Mediano/Pesado) y `dim_estado_encomienda`. Todas usan **claves subrogadas** `INT IDENTITY`, conservan la clave de negocio como `UNIQUE` para el `MERGE` e incluyen un miembro "Desconocido" (SK = −1). Se cumplen los cuatro pilares de Inmon: orientado al tema (rentabilidad), integrado (códigos homologados), variable en el tiempo (`dim_tiempo`) y no volátil (el analista solo lee).
+
+| Decisión | Justificación |
+|---|---|
+| Claves subrogadas en lugar de los ID de la OLTP | Aíslan el DWH de los cambios del sistema origen y permiten integrar más fuentes. |
+| Prorrateo del costo del viaje por peso | El costo es del viaje, pero el grano es la encomienda: `costo × peso / SUM(peso) OVER (PARTITION BY viaje)`. |
+| Margen calculado en el ETL | Se calcula una sola vez y no en cada consulta (Laboratorio 14, pregunta 4). |
+| Viajes cancelados excluidos | No generan ingreso ni costo real. |
+| SCD Tipo 1 | Los atributos casi no cambian y no tienen valor histórico. |
+| `RECOVERY SIMPLE` en el DWH | El DWH se reconstruye desde la OLTP. |
+
+## 7.2 Proceso ETL `dbo.usp_etl_akilflow`
+
+1. **Extracción** a `staging_encomiendas` (`TRUNCATE` + `INSERT ... SELECT` desde 6 tablas de la OLTP), con limpieza `UPPER/LTRIM/RTRIM`.
+2. **Reglas de calidad → cuarentena (Semana 14).** Las filas con peso nulo o no positivo, precio negativo, viaje sin fecha, costo sin prorratear o placa/ruta vacías se **mueven a `etl_errores`** con el motivo (`DELETE ... OUTPUT INTO`). No llegan a la tabla de hechos.
+3. **Carga** dentro de una transacción: `MERGE` de las 4 dimensiones (SCD1) y `MERGE` incremental de los hechos (`MATCHED → UPDATE`, `NOT MATCHED → INSERT`).
+4. **Bitácora** en `etl_log` con filas de staging, filas rechazadas, hechos insertados y actualizados (`OUTPUT $action`). Errores: `XACT_ABORT` + `TRY/CATCH` → `ROLLBACK` y `estado = 'ERROR'`.
+5. **Automatización:** Job `ETL_AkilFlow_Diario` en SQL Server Agent, todos los días a las 02:00, con 2 reintentos.
+
+| Evidencia | Resultado obtenido |
+|---|---|
+| Conciliación Staging vs Fact | 6 451 = 6 451 filas · S/ 325 059.90 = S/ 325 059.90 · peso 503 708.76 kg en ambos |
+| Costo OLTP vs costo prorrateado | S/ 245 139.75 vs S/ 245 139.89 (S/ 0.14 de redondeo) |
+| Hechos con dimensión desconocida | 0 |
+| Carga incremental (viaje completado) | 0 hechos insertados, 7 actualizados |
+| Prueba de cuarentena | La fila `AK-EXCEL-ERR01` (precio −40) va a `etl_errores` con "Precio nulo o negativo"; 0 filas en el Fact |
+
+## 7.3 Consultas OLAP y hallazgos
+
+| # | Operación | Pregunta | Hallazgo (datos del DWH) |
+|:-:|---|---|---|
+| Q1 | **ROLL-UP** `ROLLUP(region, sucursal, ruta)` | ¿Dónde se genera el margen? | 2026: S/ 160 909.79 de ingresos y **27.6 %** de margen. Sierra Norte (Jaén) 41.8 %; Costa Norte (Chiclayo) solo 11.0 %. |
+| Q2 | **CUBE** `CUBE(categoria, trimestre)` | ¿Qué tipo de unidad rinde en cada trimestre? | Las unidades pesadas concentran el 46 % de los ingresos; T2–T3 (café) duplican el margen de T1. |
+| Q3 | Ventana `LAG`, `SUM() OVER`, media móvil | ¿Cómo evolucionan los ingresos? | Mayo 2025: **+47.4 %** frente a abril; diciembre 2025: **+71.5 %**. |
+| Q4 | Ventana `RANK`, `% OVER` | ¿Qué rutas son rentables? | Tarapoto–Chiclayo factura el 18 % pero tiene **margen negativo** (−12.8 % en 2025, −3.5 % en 2026). |
+| Q5 | Ventana `RANK` + `NTILE(3)` | ¿Se aprovecha la flota? | Ocupación promedio de solo **7 %–16 %**: hay capacidad para vender carga consolidada. |
+| Q6 | Ventana `ROW_NUMBER` | Top 3 rutas por agencia | Bagua Grande funciona como *hub* con rutas cortas de alto margen. |
+| Q7 | **DRILL-DOWN** año → trimestre → mes | ¿Cómo se reparte la ruta JAE-CIX en el tiempo? | 2025: 331 encomiendas, S/ 16 298; el pico está en mayo (47). |
+| Q8 | **SLICE** `sucursal = 'JAE'` | ¿Qué mueve la sede central en 2026? | JAE-CHA sube a 49 encomiendas en mayo (campaña del café). |
+| Q9 | **DICE** JAE/BGR × campaña × flota pesada | ¿Rinde la flota pesada en el café? | Bagua Grande: S/ 6 987 con 59 % de margen en 2026. |
+
+**Recomendaciones para la gerencia:** reajustar la tarifa de Tarapoto–Chiclayo o consolidar sus salidas; asignar unidades livianas a las rutas cortas; reforzar la flota con alquiler entre mayo–agosto y en diciembre; y vender la capacidad ociosa a cooperativas.
+
+**Seguridad del DWH.** `Rol_Analista_BI` tiene `GRANT SELECT ON SCHEMA::dbo` y `DENY` sobre `staging_encomiendas`, `etl_log`, la escritura y el `EXECUTE` del ETL. La vista funciona; el staging devuelve **Msg 229**.
+
+# 8. Entrega por restauración y demostración en clase
+
+## 8.1 ¿Qué viaja en un `.bak` y qué no?
+
+Un respaldo de base de datos contiene tablas, datos, índices, vistas, procedimientos, usuarios, roles, permisos, la DMK, el certificado, la llave simétrica y la especificación de auditoría de la base. **No** contiene lo que vive en la instancia (`master` y `msdb`). Por eso `00_Restaurar_Proyecto.sql` reconstruye esos elementos en este orden:
+
+| Paso | Qué hace | Por qué |
+|:-:|---|---|
+| 0 | Comprueba que la versión sea SQL Server 2022 y que existan los dos `.bak` | Si algo falta, se detiene sin dejar el servidor a medias (`SET NOEXEC ON`) |
+| 1 | Crea `C:\AkilFlow\{Audit, XEvents, Backups, Keys, DR}` | Las crea la cuenta del servicio: no hace falta tocar permisos de Windows |
+| 2 | Crea los 5 logins con el **mismo SID** que en el origen | Los usuarios restaurados quedan enlazados sin quedar huérfanos |
+| 3 | Crea `Audit_AkilFlow` con el **mismo `AUDIT_GUID`** | La especificación de auditoría que viaja en el `.bak` se re-enlaza sola |
+| 4 | `RESTORE ... WITH MOVE` a las carpetas por defecto de la instancia, `REPLACE, CHECKSUM` | Funciona en cualquier instalación; el propietario pasa a ser `sa` |
+| 5 | `ALTER USER ... WITH LOGIN` | Repara el enlace si algún login ya existía con otro SID |
+| 6 | `OPEN MASTER KEY` + `ALTER MASTER KEY ADD ENCRYPTION BY SERVICE MASTER KEY` | La DMK estaba protegida por la SMK del servidor de origen |
+| 7–9 | Sesión de Extended Events, certificado de respaldos en `master` y Job del ETL | Elementos de instancia |
+| 10 | Verificación: estado, filas, roles, auditoría, XE y una consulta descifrada | Evidencia inmediata para el docente |
+
+**¿Por qué el `.bak` de entrega no está cifrado?** Un respaldo cifrado solo se restaura en un servidor que tenga `CertBackupServer_AkilFlow`, y la PC del aula no lo tiene: esa es justamente su protección. Los datos personales siguen protegidos dentro del `.bak` porque viajan como `VARBINARY` cifrado con AES_256 y la DMK exige su contraseña. Los respaldos cifrados FULL/DIFF/LOG se demuestran en vivo en el bloque E de la demo. El respaldo de entrega se generó con `COPY_ONLY`, por lo que no rompe la cadena del plan DRP.
+
+## 8.2 Prueba en una instancia limpia
+
+Se usaron dos instancias independientes de SQL Server 2022 (16.0.4305.5, Developer). En la primera se ejecutaron los scripts 01 a 06. En la segunda, vacía, **solo** se copiaron los dos `.bak` y se ejecutó `00_Restaurar_Proyecto.sql`:
+
+| Verificación | Resultado |
+|---|---|
+| Restauración | `AkilFlowOperaciones` (1 386 páginas) y `dwh_AkilFlow` (1 352 páginas) **ONLINE** en menos de 1 s cada una |
+| Usuarios | 5 de 5 enlazados a su login, **0 huérfanos** |
+| Cifrado | La DMK se re-vinculó y los remitentes se descifran en el servidor nuevo |
+| Auditoría / XE | Server Audit, Database Audit Specification y sesión XE **ACTIVOS** |
+| Demo completa (`01_Demo_En_Clase.sql`) | Bloques A–G sin errores inesperados; aparecen los Msg 229/230/15151 previstos, la restauración DRP y el ETL incremental |
+
+## 8.3 Pasos para el docente
+
+1. Copiar `AkilFlowOperaciones.bak` y `dwh_AkilFlow.bak` en `C:\AkilFlow\Entrega\`. Si Windows niega el acceso (error 5), usar la carpeta `Backup` de la instancia y cambiar esa ruta en el PASO 0.
+2. Abrir `00_Restaurar_Proyecto.sql` en SSMS (como sysadmin) y presionar **F5**. Tarda menos de un minuto.
+3. Abrir `01_Demo_En_Clase.sql` y ejecutar cada bloque (A a G) durante la exposición.
+
+# 9. Conclusiones y recomendaciones
+
+1. **Criterio 1.** Proponer el puesto de DBA con un decálogo medible convierte la gestión de datos de Transportes Akil en una función estratégica, alineada a sus seis problemas reales.
+2. **Criterio 2.** El modelo en 3FN, con 7 tablas y 53 restricciones, elimina redundancias e impide datos inválidos. El *covering index* redujo las lecturas lógicas de **189 a 2 (−99 %)**.
+3. **Criterio 3.** Las dos capas, los cuatro roles y los permisos de esquema, objeto, columna y módulo aplican el mínimo privilegio. La demostración de `REVOKE` frente a `DENY` y el cifrado AES_256, sin texto plano residual, dejan **0 datos personales legibles** sin autorización.
+4. **Criterio 4.** La auditoría registró incluso los intentos **fallidos**. Extended Events solo captura lo que supera 2 s. La cadena cifrada FULL → DIFF → LOG se restauró con integridad y descifrado verificados, cumpliendo un RPO de 15 min y un RTO de 60 min.
+5. **Criterio 5.** El esquema estrella, el ETL `MERGE` con cuarentena y la conciliación exacta permiten confiar en las cifras. Las operaciones OLAP mostraron que la ruta Tarapoto–Chiclayo factura mucho pero pierde dinero.
+6. **Entrega.** Restaurar dos respaldos con un solo script, validado en una instancia limpia, reproduce el proyecto completo en el aula en menos de un minuto.
+
+**Recomendaciones:** desplegar Always On Availability Groups con una réplica en Chiclayo; activar TDE como capa adicional; evaluar SCD Tipo 2 en `dim_vehiculo`; usar un índice columnstore cuando el Fact supere el millón de filas; y programar una revisión trimestral de la matriz RBAC y un simulacro DRP documentado.
+
+# 10. Referencias
+
+- Añazco Durand, O. (2026). *Material del curso Base de Datos 2: semanas 9 a 14 y guías de laboratorio 9, 10, 11, 13 y 14*. Universidad Continental.
+- Congreso de la República del Perú. (2011). *Ley N.° 29733, Ley de Protección de Datos Personales*.
+- Inmon, W. H. (2005). *Building the Data Warehouse* (4.ª ed.). Wiley.
+- Kimball, R., & Ross, M. (2013). *The Data Warehouse Toolkit* (3.ª ed.). Wiley.
+- Microsoft. (2024). *SQL Server Audit (Database Engine)*. Microsoft Learn. https://learn.microsoft.com/sql/relational-databases/security/auditing/sql-server-audit-database-engine
+- Microsoft. (2024). *Extended Events overview*. Microsoft Learn. https://learn.microsoft.com/sql/relational-databases/extended-events/extended-events
+- Microsoft. (2024). *Backup encryption*. Microsoft Learn. https://learn.microsoft.com/sql/relational-databases/backup-restore/backup-encryption
+- Microsoft. (2024). *Encrypt a column of data*. Microsoft Learn. https://learn.microsoft.com/sql/relational-databases/security/encryption/encrypt-a-column-of-data
+- Microsoft. (2024). *Clustered and nonclustered indexes described*. Microsoft Learn. https://learn.microsoft.com/sql/relational-databases/indexes/clustered-and-nonclustered-indexes-described
+- Microsoft. (2024). *MERGE (Transact-SQL)*. Microsoft Learn. https://learn.microsoft.com/sql/t-sql/statements/merge-transact-sql
+
+# 11. Anexos
+
+## Anexo A — Matriz de cumplimiento de la rúbrica
+
+| Criterio (pts) | Exigencia "Excelente" | Evidencia | Sección |
+|---|---|---|:-:|
+| **1** (1.5) | Empresa, organigrama general y de TI, DBA con decálogo de 10 funciones | Perfil + P1–P6, 2 organigramas, ficha del puesto, decálogo con KPI | 3 |
+| **2** (2.0) | 5+ tablas 3FN, PK/FK/CHECK, índices clúster/no clúster con impacto en el plan | 7 tablas, 53 restricciones, 7 clúster + 6 no clúster, plan 189 → 32 → 2 | 4 |
+| **3** (2.0) | Logins/Users en 2 capas, RBAC con GRANT/DENY, AES_256 con DMK/certificado | 4 logins, 4 users, 4 roles, GRANT/DENY/REVOKE, DMK → Cert → AES_256, sin texto plano | 5 |
+| **4** (2.5) | Audit, XE > 2 s, RECOVERY FULL, backups cifrados FULL/DIFF/LOG, 3-2-1, NORECOVERY | Audit de servidor y base, XE > 2 s, cadena cifrada, restauración en `_DR`, 3-2-1, RPO/RTO calculados | 6 |
+| **5** (2.0) | Estrella con SK, ETL MERGE desde Staging, OLAP ROLLUP/CUBE/Window | 5 dimensiones con SK, ETL MERGE con cuarentena y Job, ROLLUP/CUBE/ventanas/drill-down/slice/dice | 7 |
+
+## Anexo B — Archivos entregados
+
+| Carpeta / archivo | Uso |
+|---|---|
+| `00_ENTREGA_Restaurar/AkilFlowOperaciones.bak` · `dwh_AkilFlow.bak` | Respaldos que se restauran en el aula (SQL Server 2022) |
+| `00_ENTREGA_Restaurar/00_Restaurar_Proyecto.sql` | Script único de restauración (F5) |
+| `00_ENTREGA_Restaurar/01_Demo_En_Clase.sql` | Demostración por bloques A–G |
+| `01_Scripts_SQL_Limpios/01` … `05` | Código fuente que construyó las bases (para revisión del código T-SQL) |
+| `01_Scripts_SQL_Limpios/06_Generar_Backups_Entrega.sql` | Cómo se generaron los dos `.bak` |
+| `02_Informe/Informe_Final_Grupo06.pdf` | Este informe |
+| `05_Presentacion/AkilFlow_Grupo06.pptx` | Diapositivas de la exposición |
+
+*Las contraseñas que aparecen en los scripts (logins, DMK y exportación de certificados) son credenciales de laboratorio. En producción se guardarían en un gestor de secretos y no en el código.*

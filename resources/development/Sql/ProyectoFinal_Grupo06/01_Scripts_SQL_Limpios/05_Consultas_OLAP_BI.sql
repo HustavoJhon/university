@@ -16,6 +16,9 @@
              Q4 VENTANA - ranking de rentabilidad de rutas (RANK, % participación)
              Q5 VENTANA - ocupación de flota por vehículo (RANK + NTILE)
              Q6 VENTANA - Top 3 rutas por sucursal (ROW_NUMBER)
+             Q7 DRILL-DOWN - Año > Trimestre > Mes de la ruta JAE-CIX
+             Q8 SLICE   - solo la sucursal Jaén
+             Q9 DICE    - JAE/BGR x campaña cafetalera x flota pesada
      FASE 3. Seguridad Rol_Analista_BI (GRANT vista/dims, DENY staging) + prueba
    ============================================================================= */
 USE dwh_AkilFlow;
@@ -212,7 +215,67 @@ FROM ranking
 WHERE posicion <= 3
 ORDER BY sucursal_nombre, posicion;
 GO
-PRINT N'FASE 2 OK: consultas ROLLUP, CUBE y funciones de ventana ejecutadas.';
+/* -----------------------------------------------------------------------------
+   Q7. DRILL-DOWN (Laboratorio 14) - de lo general a lo detallado
+   Año -> Trimestre -> Mes de la ruta estrella JAE-CIX. Cada nivel "baja" un
+   escalón en la jerarquía de dim_tiempo (el inverso es ROLL-UP, ver Q1).
+   ----------------------------------------------------------------------------- */
+SELECT t.anio,
+       CASE WHEN GROUPING(t.trimestre) = 1 THEN N'Total año' ELSE CONCAT(N'T', t.trimestre) END AS trimestre,
+       CASE WHEN GROUPING(t.trimestre)  = 1 THEN N'(todos)'
+            WHEN GROUPING(t.nombre_mes) = 1 THEN N'Total trimestre'
+            ELSE t.nombre_mes END                                                            AS mes,
+       SUM(f.cantidad_encomiendas) AS encomiendas,
+       SUM(f.ingreso_envio)        AS ingresos,
+       SUM(f.margen)               AS margen
+FROM dbo.fact_encomiendas f
+JOIN dbo.dim_tiempo t ON t.tiempo_id = f.tiempo_id
+JOIN dbo.dim_ruta   r ON r.ruta_sk   = f.ruta_sk
+WHERE r.codigo_ruta = 'JAE-CIX'
+GROUP BY t.anio, ROLLUP (t.trimestre, (t.mes, t.nombre_mes))
+ORDER BY t.anio, GROUPING(t.trimestre), t.trimestre, GROUPING(t.mes), t.mes;
+GO
+
+/* -----------------------------------------------------------------------------
+   Q8. SLICE (Laboratorio 14) - "rebanada" fijando UNA dimensión
+   Solo la sucursal de origen Jaén (sucursal_codigo = 'JAE'), año 2026:
+   ¿qué productos de negocio (rutas) y qué meses mueve la sede central?
+   ----------------------------------------------------------------------------- */
+SELECT t.anio_mes, r.codigo_ruta,
+       SUM(f.cantidad_encomiendas) AS encomiendas,
+       SUM(f.peso_kg)              AS peso_kg,
+       SUM(f.ingreso_envio)        AS ingresos
+FROM dbo.fact_encomiendas f
+JOIN dbo.dim_sucursal s ON s.sucursal_sk = f.sucursal_sk
+JOIN dbo.dim_tiempo   t ON t.tiempo_id   = f.tiempo_id
+JOIN dbo.dim_ruta     r ON r.ruta_sk     = f.ruta_sk
+WHERE s.sucursal_codigo = 'JAE'            -- SLICE: una sola dimensión fijada
+  AND t.anio = 2026
+GROUP BY t.anio_mes, r.codigo_ruta
+ORDER BY t.anio_mes, r.codigo_ruta;
+GO
+
+/* -----------------------------------------------------------------------------
+   Q9. DICE (Laboratorio 14) - "sub-cubo" filtrando VARIAS dimensiones a la vez
+   Sucursales JAE y BGR x Campaña cafetalera x vehículos Pesados:
+   ¿la flota pesada rinde en la temporada del café en las agencias cafetaleras?
+   ----------------------------------------------------------------------------- */
+SELECT s.sucursal_nombre, t.anio, v.categoria,
+       COUNT(DISTINCT f.codigo_viaje) AS viajes,
+       SUM(f.peso_kg)                 AS peso_kg,
+       SUM(f.ingreso_envio)           AS ingresos,
+       SUM(f.margen)                  AS margen
+FROM dbo.fact_encomiendas f
+JOIN dbo.dim_sucursal s ON s.sucursal_sk = f.sucursal_sk
+JOIN dbo.dim_tiempo   t ON t.tiempo_id   = f.tiempo_id
+JOIN dbo.dim_vehiculo v ON v.vehiculo_sk = f.vehiculo_sk
+WHERE s.sucursal_codigo IN ('JAE', 'BGR')         -- dimensión 1
+  AND t.temporada = N'Campaña cafetalera'          -- dimensión 2
+  AND v.categoria = N'Pesado'                      -- dimensión 3
+GROUP BY s.sucursal_nombre, t.anio, v.categoria
+ORDER BY s.sucursal_nombre, t.anio;
+GO
+PRINT N'FASE 2 OK: ROLLUP, CUBE, funciones de ventana, DRILL-DOWN, SLICE y DICE ejecutadas.';
 GO
 
 /* =============================================================================
@@ -223,7 +286,7 @@ GO
 USE master;
 GO
 IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = N'login_analista_bi')
-    CREATE LOGIN login_analista_bi WITH PASSWORD = N'Akil#AnalistaBI2026', DEFAULT_DATABASE = dwh_AkilFlow,
+    CREATE LOGIN login_analista_bi WITH PASSWORD = N'Akil#AnalistaBI2026', SID = 0x1D87A11C44BB334D8F1E7EE4726495B7, DEFAULT_DATABASE = dwh_AkilFlow,
                                         CHECK_POLICY = ON, CHECK_EXPIRATION = OFF;
 GO
 USE dwh_AkilFlow;

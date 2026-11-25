@@ -1,22 +1,33 @@
 # Proyecto Final BD2 — Grupo 6 · Transportes Akil S.A.C. (AkilFlow)
 
-| Archivo | Contenido |
-|---|---|
-| `01_Scripts_SQL_Limpios/01_OLTP_Estructura_Datos_Indices.sql` | Criterio 2 · OLTP 3FN, datos, índices y plan de ejecución |
-| `01_Scripts_SQL_Limpios/02_Seguridad_RBAC_Cifrado.sql` | Criterio 3 · 4 logins/users/roles, GRANT/DENY, AES_256 |
-| `01_Scripts_SQL_Limpios/03_Auditoria_ExtendedEvents_DRP.sql` | Criterio 4 · Audit, XE > 2 s, backups cifrados, restauración DR |
-| `01_Scripts_SQL_Limpios/04_DWH_EsquemaEstrella_ETL.sql` | Criterio 5 · Staging, estrella con SK, ETL MERGE, Job |
-| `01_Scripts_SQL_Limpios/05_Consultas_OLAP_BI.sql` | Criterio 5 · ROLLUP, CUBE, ventanas, vista BI, Rol_Analista_BI |
-| `02_Informe_Final_Proyecto.md` | Informe técnico (Criterio 1 + análisis de los 5 criterios) |
-| `03_Guion_Exposicion_18min.md` | Guion por integrante, demos SSMS y preguntas del docente |
-| `04_Estructura_Diapositivas.md` | Contenido de las 14 diapositivas |
-| `05_Presentacion/presentacion.html` | Presentación reveal.js (abrir en el navegador; `S` = notas del orador, `F` = pantalla completa) |
-| `05_Presentacion/presentacion.pdf` | La misma presentación en PDF |
-| `05_Presentacion/presentacion.qmd` | Fuente Quarto: `quarto render presentacion.qmd` |
+Entrega por **restauración**: el docente no ejecuta los scripts uno por uno, restaura dos respaldos con un solo script.
 
-## Cómo ejecutar (Windows)
-1. SQL Server 2022 **Developer** (no Express) + SSMS, como `sysadmin`.
-2. Abrir y ejecutar con F5, en orden: 01 → 02 → 03 → 04 → 05 (≈ 1 min en total).
-3. Las carpetas `C:\AkilFlow\...` se crean solas. Sin unidad C: → Ctrl+H sobre `C:\AkilFlow\`.
-4. Para conectarse con los logins SQL: activar autenticación **mixta** en la instancia.
-5. Los scripts son idempotentes: se pueden volver a ejecutar desde el 01.
+## Cómo restaurar en el aula (SQL Server 2022)
+
+1. Copiar `00_ENTREGA_Restaurar/AkilFlowOperaciones.bak` y `dwh_AkilFlow.bak` en `C:\AkilFlow\Entrega\`.
+   Si sale *Operating system error 5 (Access is denied)*, usar la carpeta `Backup` de la instancia y cambiar la ruta del PASO 0.
+2. Abrir `00_ENTREGA_Restaurar/00_Restaurar_Proyecto.sql` en SSMS (sysadmin) y presionar **F5**. Tarda menos de 1 minuto.
+3. Para la exposición: `00_ENTREGA_Restaurar/01_Demo_En_Clase.sql`, ejecutado por bloques A–G.
+
+Los `.bak` se generaron en SQL Server 2022 (16.0) y **no restauran en 2019**.
+
+## Contenido
+
+| Archivo | Uso |
+|---|---|
+| `00_ENTREGA_Restaurar/*.bak` | Respaldos de `AkilFlowOperaciones` (OLTP) y `dwh_AkilFlow` (DWH) |
+| `00_ENTREGA_Restaurar/00_Restaurar_Proyecto.sql` | Restaura las 2 bases y recrea logins (mismo SID), auditoría (mismo GUID), DMK, Extended Events, certificado y Job |
+| `00_ENTREGA_Restaurar/01_Demo_En_Clase.sql` | Demo en vivo: plan de ejecución, RBAC/REVOKE, cifrado, auditoría, XE, DRP, ETL, OLAP |
+| `01_Scripts_SQL_Limpios/01`–`05` | Código fuente T-SQL que construyó las bases (criterios 2 a 5) |
+| `01_Scripts_SQL_Limpios/06_Generar_Backups_Entrega.sql` | Cómo se generaron los `.bak` (COPY_ONLY, CHECKSUM) |
+| `02_Informe/Informe_Final_Grupo06.pdf` | Informe final, ordenado por los 5 criterios de la rúbrica |
+| `03_Guion_Exposicion_18min.md` | Guion por integrante, demos y preguntas probables |
+| `05_Presentacion/AkilFlow_Grupo06.pptx` | Diapositivas (15) con notas del orador; también en PDF |
+
+## Regenerar
+
+- **Bases y `.bak`**: ejecutar `01` → `06` con F5 en SQL Server 2022 Developer. Los `.bak` quedan en `C:\AkilFlow\Entrega\`.
+- **Informe PDF**: `QUARTO_CHROMIUM=$(which chromium) quarto render 02_Informe/Informe_Final_Grupo06.qmd`, luego `python3 02_Informe/fix_svg.py 02_Informe/Informe_Final_Grupo06.html` e imprimir a PDF con `chromium --headless --no-pdf-header-footer --print-to-pdf=...`.
+- **PPT**: `node 05_Presentacion/generar_pptx.js salida.pptx` (requiere `pptxgenjs`, `react-icons`, `sharp`).
+
+Probado: scripts 01–06 en una instancia de SQL Server 2022 y restauración + demo en otra instancia **limpia**, sin errores inesperados.

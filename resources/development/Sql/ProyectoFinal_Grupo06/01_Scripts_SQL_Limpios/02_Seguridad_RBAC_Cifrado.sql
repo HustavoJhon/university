@@ -25,6 +25,8 @@
 
 /* =============================================================================
    FASE 1. CAPA 1 - AUTENTICACIÓN A NIVEL DE INSTANCIA (LOGINS EN master)
+   SID fijo: el mismo login creado en otro servidor (p. ej. al restaurar el
+   .bak en el aula) queda enlazado automáticamente con su USER (sin huérfanos).
    ============================================================================= */
 USE master;
 GO
@@ -36,16 +38,16 @@ IF SERVERPROPERTY('IsIntegratedSecurityOnly') = 1
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = N'login_operador')
-    CREATE LOGIN login_operador   WITH PASSWORD = N'Akil#Operador2026', DEFAULT_DATABASE = AkilFlowOperaciones,
+    CREATE LOGIN login_operador   WITH PASSWORD = N'Akil#Operador2026', SID = 0xA152CA08318D744289C8C8A8DED9E548, DEFAULT_DATABASE = AkilFlowOperaciones,
                                        CHECK_POLICY = ON, CHECK_EXPIRATION = OFF;
 IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = N'login_auditor')
-    CREATE LOGIN login_auditor    WITH PASSWORD = N'Akil#Auditor2026', DEFAULT_DATABASE = AkilFlowOperaciones,
+    CREATE LOGIN login_auditor    WITH PASSWORD = N'Akil#Auditor2026', SID = 0x0C7DB05EAF684840AA45F60B17B02B69, DEFAULT_DATABASE = AkilFlowOperaciones,
                                        CHECK_POLICY = ON, CHECK_EXPIRATION = OFF;
 IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = N'login_supervisor')
-    CREATE LOGIN login_supervisor WITH PASSWORD = N'Akil#Supervisor2026', DEFAULT_DATABASE = AkilFlowOperaciones,
+    CREATE LOGIN login_supervisor WITH PASSWORD = N'Akil#Supervisor2026', SID = 0x76B8A285BA6E8D4989C41C86F821B286, DEFAULT_DATABASE = AkilFlowOperaciones,
                                        CHECK_POLICY = ON, CHECK_EXPIRATION = OFF;
 IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = N'login_contador')
-    CREATE LOGIN login_contador   WITH PASSWORD = N'Akil#Contador2026', DEFAULT_DATABASE = AkilFlowOperaciones,
+    CREATE LOGIN login_contador   WITH PASSWORD = N'Akil#Contador2026', SID = 0x4E5B1DA7C4154446B5911694E336724C, DEFAULT_DATABASE = AkilFlowOperaciones,
                                        CHECK_POLICY = ON, CHECK_EXPIRATION = OFF;
 GO
 PRINT N'FASE 1 OK: 4 logins de instancia disponibles.';
@@ -455,6 +457,27 @@ EXECUTE AS USER = N'usr_supervisor';
     BEGIN CATCH
         PRINT CONCAT(N'Supervisor DELETE -> Msg ', ERROR_NUMBER(), N': ', ERROR_MESSAGE());
     END CATCH;
+REVERT;
+GO
+
+-- 7.8 REVOKE vs DENY (Laboratorio 9): GRANT -> prueba OK -> REVOKE -> prueba falla -> GRANT de nuevo
+--     REVOKE solo RETIRA un permiso concedido (vuelve al estado neutro);
+--     DENY lo PROHÍBE aunque otro rol lo conceda.
+PRINT N'--- REVOKE: Rol_Operador pierde temporalmente UPDATE(estado) sobre viajes ---';
+REVOKE UPDATE (estado) ON dbo.viajes FROM Rol_Operador;
+EXECUTE AS USER = N'usr_operador';
+BEGIN TRY
+    UPDATE dbo.viajes SET estado = estado WHERE viaje_id = 1;
+    PRINT N'Operador UPDATE viajes -> PERMITIDO (no debería ocurrir)';
+END TRY
+BEGIN CATCH
+    PRINT CONCAT(N'Operador UPDATE viajes tras REVOKE -> Msg ', ERROR_NUMBER(), N': ', ERROR_MESSAGE());
+END CATCH;
+REVERT;
+GRANT UPDATE (estado) ON dbo.viajes TO Rol_Operador;          -- se restituye el permiso original
+EXECUTE AS USER = N'usr_operador';
+    UPDATE dbo.viajes SET estado = estado WHERE viaje_id = 1;
+    PRINT N'Operador UPDATE viajes tras nuevo GRANT -> PERMITIDO';
 REVERT;
 GO
 
