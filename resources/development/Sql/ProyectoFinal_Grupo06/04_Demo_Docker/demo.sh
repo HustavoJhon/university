@@ -29,7 +29,8 @@ ejecutar() {
 
 fase() {
   case "$1" in
-    00) ejecutar 00_Restaurar_Docker.sql          sa                "$SA_PASS"              master ;;
+    00) ejecutar 00_Restaurar_Docker.sql          sa                "$SA_PASS"              master
+        ejecutar 00_Preparar_Logins_Modo_Mixto.sql sa               "$SA_PASS"              master ;;
     01) ejecutar 01_Ver_Bases_y_Tablas.sql        sa                "$SA_PASS"              master ;;
     02) ejecutar 02_Rol_Operador.sql              login_operador    'Akil#Operador2026'     AkilFlowOperaciones ;;
     03) ejecutar 03_Rol_Supervisor.sql            login_supervisor  'Akil#Supervisor2026'   AkilFlowOperaciones ;;
@@ -45,6 +46,7 @@ fase() {
     13) ejecutar 13_Restaurar_DRP.sql             sa                "$SA_PASS"              master ;;
     14) ejecutar 14_ETL_Incremental.sql           sa                "$SA_PASS"              master ;;
     15) ejecutar 15_Consultas_OLAP.sql            sa                "$SA_PASS"              master ;;
+    16) ejecutar 16_Intentos_Denegados.sql        sa                "$SA_PASS"              master ;;
     *)  echo "Fase desconocida: $1"; exit 1 ;;
   esac
 }
@@ -67,7 +69,7 @@ case "${1:-ayuda}" in
   [0-9][0-9]) fase "$1" ;;
 
   roles)  for f in 02 03 04 05 06 07; do fase "$f"; done ;;
-  todo)   for f in 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15; do fase "$f"; done ;;
+  todo)   for f in 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16; do fase "$f"; done ;;
 
   ver-backups)
     azul "Archivos en $RUTA_BACKUPS (dentro del contenedor $CONTENEDOR)"
@@ -111,7 +113,7 @@ case "${1:-ayuda}" in
 AkilFlow · demo por fases (contenedor: $CONTENEDOR, puerto $PUERTO)
 
   ./demo.sh levantar        Crear el contenedor SQL Server 2022
-  ./demo.sh 00              Restaurar los .bak (bases + logins + auditoría + XE + Job)
+  ./demo.sh 00              Restaurar los .bak y preparar logins + auditoría ampliada
   ./demo.sh 01              Ver bases, tablas, datos y seguridad restaurada
   ./demo.sh 02 .. 06        Probar cada rol conectado con SU login
                             02 operador · 03 supervisor · 04 auditor · 05 contador · 06 analista BI
@@ -124,7 +126,8 @@ AkilFlow · demo por fases (contenedor: $CONTENEDOR, puerto $PUERTO)
   ./demo.sh 13              Restaurar FULL + DIFF + LOG en AkilFlowOperaciones_DR
   ./demo.sh 14              ETL incremental al Data Warehouse
   ./demo.sh 15              Consultas OLAP
-  ./demo.sh roles | todo    Ejecutar 02-07 | 01-15 seguidas
+  ./demo.sh 16              Quién intentó acceder sin permiso (auditoría de denegados)
+  ./demo.sh roles | todo    Ejecutar 02-07 | 01-16 seguidas
 
   ./demo.sh ver-backups     Listar los archivos de backup dentro del contenedor
   ./demo.sh copiar-backups  Copiarlos a ./backups_generados en su PC

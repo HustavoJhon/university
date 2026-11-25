@@ -83,10 +83,16 @@ PRINT N'    UPDATE viajes OK';
 REVERT;
 GO
 REVOKE UPDATE (estado) ON dbo.viajes FROM Rol_Operador;
-PRINT N'(b) Tras REVOKE (permiso retirado, estado neutro) -> ESPERADO: Msg 229';
+PRINT N'(b) Tras REVOKE (permiso retirado, estado neutro) -> ESPERADO: DENEGADO (Msg 229)';
 GO
 EXECUTE AS USER = N'usr_operador';
-UPDATE dbo.viajes SET estado = estado WHERE viaje_id = 1;
+BEGIN TRY
+    UPDATE dbo.viajes SET estado = estado WHERE viaje_id = 1;
+    PRINT N'    UPDATE viajes PERMITIDO (no debería ocurrir)';
+END TRY
+BEGIN CATCH
+    PRINT CONCAT(N'    UPDATE viajes DENEGADO como se esperaba -> Msg ', ERROR_NUMBER(), N': ', ERROR_MESSAGE());
+END CATCH;
 REVERT;
 GO
 GRANT UPDATE (estado) ON dbo.viajes TO Rol_Operador;

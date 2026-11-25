@@ -14,7 +14,7 @@ cd ProyectoFinal_Grupo06/04_Demo_Docker
 | # | Comando | Archivo | Conectado como | Qué demuestra |
 |---|---|---|---|---|
 | — | `./demo.sh levantar` | — | — | Crea el contenedor SQL Server 2022 (puerto 14333) |
-| 0 | `./demo.sh 00` | `00_Restaurar_Docker.sql` | sa | Restaura los 2 `.bak` + logins, auditoría, XE, certificado y Job |
+| 0 | `./demo.sh 00` | `00_Restaurar_Docker.sql` + `00_Preparar_Logins_Modo_Mixto.sql` | sa | Restaura los 2 `.bak`, deja los logins listos y amplía la auditoría |
 | 1 | `./demo.sh 01` | `01_Ver_Bases_y_Tablas.sql` | sa | Bases ONLINE, tablas y filas, columnas cifradas, muestra de datos, usuarios ↔ roles |
 | 2 | `./demo.sh 02` | `02_Rol_Operador.sql` | `login_operador` | Registra encomienda y cambia estado ✔ · DELETE, INSERT directo, precio, personal ✘ |
 | 3 | `./demo.sh 03` | `03_Rol_Supervisor.sql` | `login_supervisor` | Lee todo, ve PII, actualiza flota ✔ · DELETE y DDL ✘ |
@@ -32,11 +32,12 @@ cd ProyectoFinal_Grupo06/04_Demo_Docker
 | 13 | `./demo.sh 13` | `13_Restaurar_DRP.sql` | sa | Restaura FULL → DIFF → LOG en `AkilFlowOperaciones_DR` y valida |
 | 14 | `./demo.sh 14` | `14_ETL_Incremental.sql` | sa | Nueva encomienda en la OLTP → ETL → aparece en `fact_encomiendas` |
 | 15 | `./demo.sh 15` | `15_Consultas_OLAP.sql` | sa | ROLLUP, CUBE, RANK, LAG, SLICE y DICE |
+| 16 | `./demo.sh 16` | `16_Intentos_Denegados.sql` | sa | Quién intentó acceder a qué sin permiso, y los logins fallidos |
 
-Atajos: `./demo.sh roles` (fases 02–07 seguidas) · `./demo.sh todo` (01–15) · `./demo.sh ayuda`.
+Atajos: `./demo.sh roles` (fases 02–07 seguidas) · `./demo.sh todo` (01–16) · `./demo.sh ayuda`.
 
-Los mensajes **Msg 229 / 230 / 262 / 916 / 1088 / 15151** de las fases 2 a 7 son **intencionales**:
-cada uno va precedido de `(DENEGADO n) ... ESPERADO: Msg xxx`.
+Los archivos de roles (02–06) ejecutan cada prueba dentro de TRY/CATCH y terminan con una tabla
+`esperado / obtenido / ✔ CORRECTO`. El código de error de cada denegación aparece en la columna `mensaje_sql_server`:
 
 | Error | Significado |
 |---|---|
